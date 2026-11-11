@@ -97,3 +97,24 @@ export function texNum(x: number, sig = 4): string {
   }
   return fixComma(s);
 }
+
+/** Marcas "lindas" para un eje entre 0 y max (pasos 1, 2, 2,5 o 5 × 10ⁿ). */
+export function niceTicks(min: number, max: number, target = 8): number[] {
+  const span = max - min;
+  if (!(span > 0)) return [min];
+  const raw = span / target;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? 10 * mag;
+  const out: number[] = [];
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(Number(v.toPrecision(12)));
+  return out;
+}
+
+/** Formato corto para marcas de ejes: sin ceros finales innecesarios ("2", "0,5", "1,2 × 10⁻³"). */
+export function fmtTick(v: number): string {
+  if (!Number.isFinite(v)) return '';
+  if (v === 0) return '0';
+  const a = Math.abs(v);
+  if (a < 1e-3 || a >= 1e6) return fmtSig(v, 2);
+  return String(Number(v.toPrecision(6))).replace('.', ',');
+}

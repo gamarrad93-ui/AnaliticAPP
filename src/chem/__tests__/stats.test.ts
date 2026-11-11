@@ -198,3 +198,25 @@ describe('Cifras significativas y formato', () => {
     expect(fmtSig(0.1, 3)).toBe('0,100');
   });
 });
+
+import { parseTable, parseList } from '../numeric/table';
+describe('Pegado de tablas (Excel/Sheets)', () => {
+  it('tabulado con coma decimal y encabezado', () => {
+    const t = parseTable('Conc\tSeñal\n0\t0,002\n1,5\t0,101\n3\t0,199\n');
+    expect(t.header).toEqual(['Conc', 'Señal']);
+    expect(t.rows).toEqual([[0, 0.002], [1.5, 0.101], [3, 0.199]]);
+  });
+  it('punto y coma, espacios y CSV con punto decimal', () => {
+    expect(parseTable('1;2\n3;4').rows).toEqual([[1, 2], [3, 4]]);
+    expect(parseTable('1,5 2,5').rows).toEqual([[1.5, 2.5]]);
+    expect(parseTable('1.5,2.5').rows).toEqual([[1.5, 2.5]]);
+  });
+  it('líneas inválidas se informan, no rompen', () => {
+    const t = parseTable('1\t2\nabc\t3\n4\t5');
+    expect(t.rows).toEqual([[1, 2], [4, 5]]);
+    expect(t.skipped).toHaveLength(1);
+  });
+  it('lista de números', () => {
+    expect(parseList('10,2; 10,5\n10,3 10,6').values).toEqual([10.2, 10.5, 10.3, 10.6]);
+  });
+});

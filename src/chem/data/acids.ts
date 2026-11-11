@@ -33,6 +33,7 @@ export const SYSTEMS: AcidSystemData[] = [
   { id: 'tartarico', name: 'Ácido tartárico', pKa: [3.04, 4.37], zFull: 0, species: ['H₂Tar', 'HTar⁻', 'Tar²⁻'] },
   { id: 'maleico', name: 'Ácido maleico', pKa: [1.92, 6.27], zFull: 0, species: ['H₂Mal', 'HMal⁻', 'Mal²⁻'] },
   { id: 'sulfurico', name: 'Ácido sulfúrico (1ª disociación fuerte)', pKa: [-3, 1.99], zFull: 0, species: ['H₂SO₄', 'HSO₄⁻', 'SO₄²⁻'] },
+  { id: 'cromico', name: 'Cromato ácido / cromato', pKa: [6.51], zFull: -1, species: ['HCrO₄⁻', 'CrO₄²⁻'] },
   { id: 'glicina', name: 'Glicina', pKa: [2.35, 9.78], zFull: 1, species: ['H₂Gly⁺', 'HGly', 'Gly⁻'] },
   { id: 'etilendiamina', name: 'Etilendiamina', pKa: [6.85, 9.93], zFull: 2, species: ['H₂en²⁺', 'Hen⁺', 'en'] },
   { id: 'fosforico', name: 'Ácido fosfórico', pKa: [2.15, 7.20, 12.35], zFull: 0, species: ['H₃PO₄', 'H₂PO₄⁻', 'HPO₄²⁻', 'PO₄³⁻'] },

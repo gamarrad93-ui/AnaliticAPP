@@ -116,5 +116,39 @@ Intervalo de confianza de la media: x̄ ± t·s/√n verificado a mano.
 
 ---
 
+## 3. Fase 2: redox, EDTA, precipitación y solubilidad (`src/chem/__tests__/phase2.test.ts`)
+
+### Redox
+| Caso | Esperado | Referencia |
+|---|---|---|
+| 50,00 mL Fe²⁺ 0,0500 M con Ce⁴⁺ 0,1000 M (H₂SO₄ 1 M) | V_eq = 25,00 mL | Skoog |
+| … a 5,00 mL | E = 0,68 − 0,05916·log 4 = 0,644 V | Nernst del Fe |
+| … en la equivalencia | E = (0,68 + 1,44)/2 = 1,06 V | Skoog |
+| … a 25,10 mL | E = 1,44 − 0,05916·log 250 = 1,298 V | Nernst del Ce |
+| Fe²⁺ con MnO₄⁻, [H⁺] = 1 M | E_eq = (0,68 + 5·1,51)/6 = 1,372 V; a pH 1 baja 8·0,05916/6 V | Fórmula de libro |
+| Fe²⁺ con Cr₂O₇²⁻ | Después del PE, Nernst con [Cr³⁺]² | Cálculo a mano |
+| I₃⁻ con S₂O₃²⁻ ([I⁻] = 0,1 M) | V_eq = 12,5 mL; E antes del PE = Nernst del yodo | Cálculo a mano |
+| Curvas | Monótonas | — |
+
+### EDTA
+- α(Y⁴⁻) = 0,30 (pH 10), 0,81 (pH 11), 0,98 (pH 12), 3,8 × 10⁻⁴ (pH 7): **coincide con la tabla de Harris**.
+- 50,0 mL Ca²⁺ 0,0400 M con EDTA 0,0800 M a pH 10: V_eq = 25 mL; pCa a 5 mL = 1,536; en el PE = 5,85 (√(C/K′)); a 26 mL = log(K′·[Y′]/[CaY]). Todos verificados a mano.
+- α(M) para Zn²⁺/NH₃ = 1/(1 + Σβₙ[NH₃]ⁿ).
+- pH mínimo para Ca²⁺ (log K′ ≥ 8): entre 7,3 y 8,2.
+
+### Argentometría (Skoog: 50,00 mL Cl⁻ 0,0500 M con AgNO₃ 0,1000 M)
+- V_eq = 25 mL; pAg_eq = ½ pKsp = 4,87; pAg a 10 mL = 8,14; a 26 mL = 2,88.
+- Mohr con [CrO₄²⁻] = 0,005 M: pAg final = 4,81.
+- Mezcla I⁻ + Cl⁻: precipita primero AgI (equivalencias en 25 y 50 mL).
+
+### Solubilidad
+- AgCl: s = √Ksp. CaF₂: s = (Ksp/4)^(1/3) = 2,14 × 10⁻⁴ M.
+- AgCl en NaCl 0,1 M: s(0,1 + s) = Ksp exactamente.
+- CaF₂ más soluble a pH ácido; a pH 10 coincide con el agua pura.
+- Mg(OH)₂ a pH 10: s = Ksp/[OH⁻]² = 7,1 × 10⁻⁴ M.
+- "¿Precipita?": AgNO₃ 10⁻⁴ + NaCl 10⁻⁴ (volúmenes iguales) → Q = 2,5 × 10⁻⁹ > Ksp: sí. Con 10⁻⁶: no. Fe(OH)₃ (precipitación casi total): Q final = Ksp con 6 cifras.
+
+---
+
 ## Cómo agregar una prueba
 Abrí `src/chem/__tests__/*.test.ts`, copiá un bloque `it('…', () => { … })`, cambiá los valores y corré `npm test`.

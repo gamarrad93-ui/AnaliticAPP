@@ -189,6 +189,8 @@ describe('Cifras significativas y formato', () => {
     expect(parseNumber('1,5e-3')).toBe(0.0015);
     expect(parseNumber('1,5×10^-3')).toBeCloseTo(0.0015, 15);
     expect(parseNumber('1.234,5')).toBe(1234.5);
+    expect(parseNumber('3,90 × 10⁻¹¹')).toBeCloseTo(3.9e-11, 25);
+    expect(parseNumber(fmtSig(1.82e-10, 3))).toBeCloseTo(1.82e-10, 24);
     expect(parseNumber('abc')).toBeNull();
     expect(parseNumber('')).toBeNull();
   });

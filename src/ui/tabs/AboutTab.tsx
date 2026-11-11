@@ -70,6 +70,32 @@ export default function AboutTab() {
         </ul>
       </Sec>
 
+      <Sec title="Redox">
+        <p>
+          Cada cupla se describe con su potencial formal E°′ y la ecuación de Nernst (25 °C, 0,05916 V), incluyendo [H⁺]<sup>m</sup> (MnO₄⁻, Cr₂O₇²⁻) y la estequiometría del reducido (2 Cr³⁺, 2 S₂O₃²⁻).
+          En cada volumen se busca el único potencial que cumple el <strong>balance de electrones</strong> (e⁻ cedidos por el reductor = e⁻ ganados por el oxidante), sin dividir la curva en zonas.
+          Supuestos: [H⁺] constante (medio ácido en exceso), [I⁻] constante en yodometría (KI en exceso), potenciales formales del medio indicado.
+        </p>
+      </Sec>
+
+      <Sec title="Complejometría y precipitación">
+        <p>
+          EDTA: α(Y⁴⁻) con los 6 pKa del H₆Y²⁺ (Harris, μ = 0,1 M); constante condicional K″ = Kf·α(Y⁴⁻)·α(M), donde α(M) incluye el NH₃ auxiliar con sus constantes acumuladas β.
+          En cada punto se resuelve la cuadrática exacta de los balances de masa (sin dividir en "antes / en / después" de la equivalencia). Se supone pH constante (buffer) y estequiometría 1:1.
+        </p>
+        <p>
+          Argentometría: se resuelve [Ag⁺] con el balance de plata y la condición [X⁻] = mín(C<sub>X</sub>, Ksp/[Ag⁺]), lo que permite mezclas de haluros (precipitación fraccionada). El punto final de Mohr se calcula con Ksp(Ag₂CrO₄), sin corrección por el blanco.
+        </p>
+      </Sec>
+
+      <Sec title="Solubilidad">
+        <p>
+          Solubilidad molar a partir de Ksp para sales M<sub>a</sub>X<sub>b</sub>. Ion común: se resuelve Ksp = (C<sub>M</sub> + a·s)<sup>a</sup>(C<sub>X</sub> + b·s)<sup>b</sup> exactamente.
+          Efecto del pH: K′sp = Ksp/α<sub>X</sub><sup>b</sup> (anión básico) o [OH⁻] directo para hidróxidos. No se incluyen la hidrólisis del catión, los complejos hidroxo ni la fuerza iónica: es el modelo del curso.
+          Los Ksp son valores típicos de tabla (pueden diferir entre libros) y se pueden editar.
+        </p>
+      </Sec>
+
       <Sec title="Bibliografía">
         <ul className="list-disc space-y-1 pl-5">
           <li>D. C. Harris, <em>Quantitative Chemical Analysis</em> (Análisis Químico Cuantitativo), W. H. Freeman.</li>

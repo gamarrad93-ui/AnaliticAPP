@@ -12,6 +12,8 @@ export function parseNumber(raw: string): number | null {
   if (raw == null) return null;
   let s = String(raw).trim().replace(/\s+/g, '').replace(/−/g, '-');
   if (s === '') return null;
+  // superíndices (como los que muestra la app: "3,9 × 10⁻¹¹") → dígitos normales
+  s = s.replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (c) => ('⁻⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c) === 0 ? '-' : String('⁻⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c) - 1)));
   // notación "×10^-3", "x10^-3", "*10^-3", "·10-3"
   s = s.replace(/[×x*·]10\^?/i, 'e');
   const hasComma = s.includes(',');

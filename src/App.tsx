@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { APP_NAME, AUTHOR, COURSE, PROFESSOR } from './config';
 import { useDisplay } from './ui/display';
 
@@ -7,6 +7,9 @@ const TitrationTab = lazy(() => import('./ui/tabs/TitrationTab'));
 const SpeciesTab = lazy(() => import('./ui/tabs/SpeciesTab'));
 const CalibrationTab = lazy(() => import('./ui/tabs/CalibrationTab'));
 const StatsTab = lazy(() => import('./ui/tabs/StatsTab'));
+const RedoxTab = lazy(() => import('./ui/tabs/RedoxTab'));
+const ComplexTab = lazy(() => import('./ui/tabs/ComplexTab'));
+const SolubilityTab = lazy(() => import('./ui/tabs/SolubilityTab'));
 const AboutTab = lazy(() => import('./ui/tabs/AboutTab'));
 
 const TABS = [
@@ -14,6 +17,9 @@ const TABS = [
   { id: 'especies', label: 'Especies y buffers', icon: '📊', C: SpeciesTab },
   { id: 'calibracion', label: 'Calibración', icon: '📈', C: CalibrationTab },
   { id: 'estadistica', label: 'Estadística', icon: '🎯', C: StatsTab },
+  { id: 'redox', label: 'Redox', icon: '⚡', C: RedoxTab },
+  { id: 'complejos', label: 'EDTA y precipitación', icon: '🔗', C: ComplexTab },
+  { id: 'solubilidad', label: 'Solubilidad', icon: '🧂', C: SolubilityTab },
   { id: 'acerca', label: 'Acerca de', icon: 'ℹ️', C: AboutTab },
 ] as const;
 
@@ -38,10 +44,15 @@ export default function App() {
     setTab(id);
   };
   const Current = TABS.find((t) => t.id === tab)!.C;
+  // en el celular, que la pestaña activa quede visible en la barra deslizable
+  const navRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    navRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }, [tab]);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+      <header className="z-20 lg:sticky lg:top-0 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2">
           <div>
             <h1 className="text-xl font-bold text-teal-800 dark:text-teal-300">⚗️ {APP_NAME}</h1>
@@ -56,7 +67,7 @@ export default function App() {
             </button>
           </div>
         </div>
-        <nav className="mx-auto max-w-7xl overflow-x-auto px-2" aria-label="Secciones">
+        <nav ref={navRef} className="mx-auto max-w-7xl overflow-x-auto px-2" aria-label="Secciones">
           <ul className="flex gap-1 whitespace-nowrap">
             {TABS.map((t) => (
               <li key={t.id}>

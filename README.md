@@ -11,7 +11,7 @@ Funciona en la computadora, en el proyector (botón **📽️ Modo proyector**) 
 |---|---|
 | 🧪 **Titulaciones** | Curvas ácido-base exactas (fuertes, débiles, polipróticos, mezclas). Puntos de equivalencia y semiequivalencia, 1ª derivada, pH a cualquier volumen, bandas de indicadores, "¿Qué indicador sirve?" y error de titulación. |
 | 📊 **Especies y buffers** | Diagrama de distribución (α y log C vs pH) con pKa editables. Diseñador de buffers: par conjugado óptimo, gramos/mL a pesar, capacidad buffer. |
-| 📈 **Calibración** | Mínimos cuadrados: pendiente, ordenada, errores, r, R², residuos, LOD/LOQ, desconocida con intervalo de confianza. Adición estándar. Pegar desde Excel, exportar a PNG y CSV. |
+| 📈 **Calibración** | Mínimos cuadrados: pendiente, ordenada, sus errores, r, R² y residuos, con tabla editable tipo planilla. Adición estándar con intervalo de confianza. Pegar desde Excel, exportar a PNG y CSV. |
 | ⚡ **Redox** | Curvas E vs V exactas (Fe²⁺/Ce⁴⁺, Fe²⁺/MnO₄⁻, Fe²⁺/Cr₂O₇²⁻, I₃⁻/S₂O₃²⁻ o cuplas a elección), potencial de equivalencia, indicadores redox con error, electrodo de referencia. |
 | 🔗 **EDTA y precipitación** | Curvas pM con α(Y⁴⁻) y NH₃ auxiliar, log K′ vs pH (pH mínimo). Argentometría (pAg/pX, mezclas de haluros), Mohr, Volhard y Fajans. |
 | 🧂 **Solubilidad** | Ksp, ion común (exacto), efecto del pH, "¿precipita?" al mezclar dos soluciones. |

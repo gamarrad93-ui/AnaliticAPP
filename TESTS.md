@@ -83,6 +83,8 @@ Coincidencia con 12 decimales. Además, los residuos suman 0.
 
 **LOD = 3,3·s_y/x/b; LOQ = 10·s_y/x/b** (criterio ICH Q2(R1)).
 
+> Nota: el LOD/LOQ y la concentración de la muestra desconocida están programados y probados en el motor (`src/chem/stats/regression.ts`), pero por ahora **no se muestran** en la pestaña de calibración.
+
 ### Adición estándar (ejemplo de Ag por absorción atómica, Miller & Miller)
 x_E = 17,26 ng/mL; s = 0,748; IC 95 % = ±1,92. Coincide con scipy y con el libro (17,3 ± 1,9).
 

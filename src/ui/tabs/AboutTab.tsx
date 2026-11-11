@@ -63,8 +63,7 @@ export default function AboutTab() {
       <Sec title="Calibración y estadística">
         <ul className="list-disc space-y-1 pl-5">
           <li>Regresión por <strong>mínimos cuadrados ordinarios</strong> (supone error sólo en y, varianza constante). Fórmulas de Miller &amp; Miller, cap. 5.</li>
-          <li><strong>LOD = 3,3·s<sub>y/x</sub>/b</strong> y <strong>LOQ = 10·s<sub>y/x</sub>/b</strong> (ICH Q2(R1), basado en la desviación estándar de la regresión).</li>
-          <li>Concentración desconocida con intervalo de confianza usando t con n − 2 grados de libertad; adición estándar por extrapolación a señal cero.</li>
+          <li>Adición estándar por extrapolación a señal cero, con intervalo de confianza usando t con n − 2 grados de libertad.</li>
           <li>Valores críticos de t y F calculados con la función beta incompleta; G de Grubbs a partir de t (ISO 5725-2). Tabla Q de Dixon: Rorabacher, Anal. Chem. 1991, 63, 139.</li>
           <li>Propagación de errores de primer orden (GUM) con derivadas numéricas: sirve para cualquier fórmula que se escriba.</li>
         </ul>

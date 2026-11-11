@@ -3,9 +3,8 @@
  */
 import { useDeferredValue, useMemo, useState } from 'react';
 import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from 'recharts';
-import { parseList } from '../../chem/numeric/table';
 import { DataGrid, emptyGrid, gridFromText, gridToPoints } from '../components/DataGrid';
-import { detectionLimits, inversePrediction, linearRegression, standardAddition, type Regression } from '../../chem/stats/regression';
+import { linearRegression, standardAddition, type Regression } from '../../chem/stats/regression';
 import { fmtFixed, fmtSig, fmtTick, niceTicks, texNum } from '../../chem/numeric/format';
 import { formatWithUncertainty } from '../../chem/stats/sigfigs';
 import { Alert, NumField, Segmented, Stat } from '../components/fields';
@@ -45,7 +44,6 @@ export default function CalibrationTab() {
   const setGrid = mode === 'cal' ? setGridCal : setGridSA;
   const [xUnit, setXUnit] = useState('');
   const [conf, setConf] = useState<Conf>('0.95');
-  const [y0raw, setY0raw] = useState('13,5');
   const dil = useNum('1');
   const dilErr = mode === 'sa' ? checkNum(dil.value, dil.raw, { positive: true }) : null;
 
@@ -68,19 +66,14 @@ export default function CalibrationTab() {
   }, [table]);
 
   const confidence = Number(conf);
-  const y0list = parseList(y0raw);
   const reg = 'reg' in fit ? fit.reg : null;
-  const lim = reg ? detectionLimits(reg) : null;
-  const pred = reg && mode === 'cal' && y0list.values.length > 0 && y0list.bad.length === 0
-    ? inversePrediction(reg, y0list.values.reduce((a, b) => a + b, 0) / y0list.values.length, y0list.values.length, confidence)
-    : null;
   const sa = reg && mode === 'sa' ? standardAddition(reg, confidence) : null;
 
   // datos para graficar
   const chart = useMemo(() => {
     if (!reg || !('reg' in fit)) return null;
-    const xmin = Math.min(...fit.x, mode === 'sa' && sa ? -sa.xE : Infinity, pred ? pred.x0 : Infinity, 0);
-    const xmax = Math.max(...fit.x, pred ? pred.x0 : -Infinity);
+    const xmin = Math.min(...fit.x, mode === 'sa' && sa ? -sa.xE : Infinity, 0);
+    const xmax = Math.max(...fit.x);
     const pad = (xmax - xmin) * 0.05;
     const x1 = mode === 'sa' ? xmin - pad : Math.min(xmin, 0);
     const x2 = xmax + pad;
@@ -89,17 +82,15 @@ export default function CalibrationTab() {
       line: [{ x: x1, fit: reg.intercept + reg.slope * x1 }, { x: x2, fit: reg.intercept + reg.slope * x2 }],
       domain: [x1, x2] as [number, number],
     };
-  }, [reg, fit, mode, sa, pred]);
+  }, [reg, fit, mode, sa]);
 
   const warnings: string[] = [];
   if (reg) {
     if (reg.n < 5) warnings.push('Se recomiendan al menos 5 o 6 estándares para una calibración confiable.');
-    if (pred && 'reg' in fit && (pred.x0 < Math.min(...fit.x) || pred.x0 > Math.max(...fit.x))) warnings.push('La concentración calculada cae fuera del rango de los estándares: es una extrapolación y no es confiable.');
-    if (pred && lim && pred.x0 < lim.loq) warnings.push(`El resultado está por debajo del LOQ (${fmtSig(lim.loq, 3)}): se puede detectar pero no cuantificar con buena precisión.`);
     if (reg.r < 0.99 && mode === 'cal') warnings.push('r < 0,99: revisá la linealidad en el gráfico de residuos (r alto no garantiza linealidad, pero r bajo indica problemas).');
   }
 
-  const steps = reg ? buildSteps(reg, confidence, pred, sa, lim!, mode) : [];
+  const steps = reg ? buildSteps(reg, sa, mode) : [];
 
   return (
     <div className="space-y-4">
@@ -118,24 +109,13 @@ export default function CalibrationTab() {
               <button className="btn" onClick={() => setGrid(gridFromText(mode === 'cal' ? EXAMPLE_CAL : EXAMPLE_SA))}>Cargar ejemplo</button>
               <button className="btn" onClick={() => setGrid(emptyGrid())}>Vaciar tabla</button>
             </div>
-            <NumField label="Unidad de concentración (opcional)" value={xUnit} onChange={setXUnit} placeholder={unit || 'mg/L'} />
-            <div>
+            {mode === 'sa' && <NumField label="Unidad de concentración (opcional)" value={xUnit} onChange={setXUnit} placeholder={unit || 'mg/L'} />}
+            {mode === 'sa' && <div>
               <span className="label">Nivel de confianza</span>
               <Segmented ariaLabel="Nivel de confianza" value={conf} onChange={setConf} options={[{ value: '0.90', label: '90 %' }, { value: '0.95', label: '95 %' }, { value: '0.99', label: '99 %' }]} />
-            </div>
+            </div>}
           </section>
-          {mode === 'cal' ? (
-            <section className="card space-y-3">
-              <h2 className="card-title">Muestra desconocida</h2>
-              <NumField
-                label="Señal medida (una o varias réplicas)"
-                value={y0raw}
-                onChange={setY0raw}
-                error={y0list.bad.length ? `No se pudo leer: ${y0list.bad.join(', ')}` : y0list.values.length === 0 ? 'Escribí al menos una señal.' : null}
-                hint="Para varias réplicas separá con punto y coma: 2,9; 3,0; 2,8"
-              />
-            </section>
-          ) : (
+          {mode === 'sa' && (
             <section className="card space-y-3">
               <h2 className="card-title">Muestra original</h2>
               <NumField label="Factor de dilución de la muestra" value={dil.raw} onChange={dil.setRaw} error={dilErr} hint="Si se tomaron 10 mL de muestra y se llevaron a 50 mL, el factor es 5." />
@@ -156,16 +136,7 @@ export default function CalibrationTab() {
                   <Stat label="Pendiente b" value={fmtSig(reg.slope, 5)} sub={`s_b = ${fmtSig(reg.sSlope, 3)}`} />
                   <Stat label="Ordenada a" value={fmtSig(reg.intercept, 5)} sub={`s_a = ${fmtSig(reg.sIntercept, 3)}`} />
                   <Stat label="r" value={fmtFixed(reg.r, 5)} sub={`R² = ${fmtFixed(reg.r2, 5)}`} />
-                  <Stat label="s_y/x" value={fmtSig(reg.syx, 4)} sub={`n = ${reg.n}; gl = ${reg.df}`} />
-                  {lim && <Stat label="LOD (3,3·s_y/x / b)" value={fmtSig(lim.lod, 3)} sub={unit} />}
-                  {lim && <Stat label="LOQ (10·s_y/x / b)" value={fmtSig(lim.loq, 3)} sub={unit} />}
-                  {pred && (
-                    <Stat
-                      label={`Desconocida x₀ (IC ${Math.round(confidence * 100)} %)`}
-                      value={formatWithUncertainty(pred.x0, pred.halfWidth).text}
-                      sub={`s_x₀ = ${fmtSig(pred.sx0, 3)} · t = ${fmtFixed(pred.t, 3)} · m = ${pred.m} ${unit}`}
-                    />
-                  )}
+                  <Stat label="Cantidad de puntos" value={reg.n} />
                   {sa && (
                     <>
                       <Stat label={`x_E en la solución medida (IC ${Math.round(confidence * 100)} %)`} value={formatWithUncertainty(sa.xE, sa.halfWidth).text} sub={`s_xE = ${fmtSig(sa.sxE, 3)} · t = ${fmtFixed(sa.t, 3)} ${unit}`} />
@@ -175,9 +146,6 @@ export default function CalibrationTab() {
                     </>
                   )}
                 </div>
-                <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">
-                  LOD y LOQ: criterio ICH Q2(R1) basado en la desviación estándar de la regresión (s_y/x) y la pendiente. Es una estimación; otros criterios (blancos replicados, IUPAC) pueden dar valores distintos.
-                </p>
               </section>
 
               <ChartCard
@@ -186,7 +154,7 @@ export default function CalibrationTab() {
                 actions={
                   <button
                     className="btn"
-                    onClick={() => exportCsv([[xLabel, yLabel, 'y ajustada', 'residuo'], ...chart.points.map((p, i) => [p.x, p.y, reg.fitted[i], p.res]), [], ['pendiente', reg.slope], ['s pendiente', reg.sSlope], ['ordenada', reg.intercept], ['s ordenada', reg.sIntercept], ['r', reg.r], ['R2', reg.r2], ['s_y/x', reg.syx], ['LOD', lim!.lod], ['LOQ', lim!.loq], ...(pred ? [['x0', pred.x0], ['s_x0', pred.sx0], ['IC +/-', pred.halfWidth]] : []), ...(sa ? [['xE', sa.xE], ['s_xE', sa.sxE], ['IC +/-', sa.halfWidth]] : [])], mode === 'cal' ? 'calibracion.csv' : 'adicion-estandar.csv')}
+                    onClick={() => exportCsv([[xLabel, yLabel, 'y ajustada', 'residuo'], ...chart.points.map((p, i) => [p.x, p.y, reg.fitted[i], p.res]), [], ['pendiente', reg.slope], ['s pendiente', reg.sSlope], ['ordenada', reg.intercept], ['s ordenada', reg.sIntercept], ['r', reg.r], ['R2', reg.r2], ...(sa ? [['xE', sa.xE], ['s_xE', sa.sxE], ['IC +/-', sa.halfWidth]] : [])], mode === 'cal' ? 'calibracion.csv' : 'adicion-estandar.csv')}
                   >
                     ⬇ CSV
                   </button>
@@ -203,8 +171,6 @@ export default function CalibrationTab() {
                     {mode === 'sa' && <ReferenceLine x={0} stroke={th.axis} />}
                     <Line data={chart.line} dataKey="fit" stroke={th.main} strokeWidth={th.strokeWidth} dot={false} isAnimationActive={false} name="Recta" />
                     <Scatter data={chart.points} dataKey="y" fill={th.accent} name="Estándares" isAnimationActive={false} />
-                    {pred && <ReferenceLine y={pred.y0} stroke={th.muted} strokeDasharray="5 4" />}
-                    {pred && <ReferenceLine x={pred.x0} stroke={th.muted} strokeDasharray="5 4" label={{ value: `x₀ = ${fmtSig(pred.x0, 3)}`, position: 'top', fontSize: th.fontSize - 2, fill: th.text }} />}
                     {sa && <ReferenceLine x={-sa.xE} stroke={th.muted} strokeDasharray="5 4" label={{ value: `−x_E = ${fmtSig(-sa.xE, 3)}`, position: 'top', fontSize: th.fontSize - 2, fill: th.text }} />}
                     <Tooltip formatter={(v: number) => fmtSig(v, 4)} labelFormatter={(v: number) => `x = ${fmtSig(v, 4)}`} contentStyle={{ background: th.bg, borderColor: th.grid, color: th.text, fontSize: th.fontSize }} />
                   </ComposedChart>
@@ -246,7 +212,7 @@ export default function CalibrationTab() {
   );
 }
 
-function buildSteps(reg: Regression, conf: number, pred: ReturnType<typeof inversePrediction> | null, sa: ReturnType<typeof standardAddition> | null, lim: ReturnType<typeof detectionLimits>, mode: Mode): Step[] {
+function buildSteps(reg: Regression, sa: ReturnType<typeof standardAddition> | null, mode: Mode): Step[] {
   const t = (x: number, s = 5) => texNum(x, s);
   const steps: Step[] = [
     {
@@ -270,21 +236,7 @@ function buildSteps(reg: Regression, conf: number, pred: ReturnType<typeof inver
         `s_b = \\frac{s_{y/x}}{\\sqrt{S_{xx}}} = ${t(reg.sSlope)},\\qquad s_a = s_{y/x}\\sqrt{\\frac{\\sum x_i^2}{n\\,S_{xx}}} = ${t(reg.sIntercept)}`,
       ],
     },
-    {
-      title: 'Límites de detección y cuantificación (ICH Q2)',
-      tex: `\\mathrm{LOD} = \\frac{3{,}3\\,s_{y/x}}{b} = ${t(lim.lod, 3)},\\qquad \\mathrm{LOQ} = \\frac{10\\,s_{y/x}}{b} = ${t(lim.loq, 3)}`,
-    },
   ];
-  if (mode === 'cal' && pred) {
-    steps.push({
-      title: `Concentración de la muestra (media de m = ${pred.m} réplica(s)) e intervalo de confianza`,
-      tex: [
-        `x_0 = \\frac{y_0 - a}{b} = \\frac{${t(pred.y0)} - ${t(reg.intercept)}}{${t(reg.slope)}} = ${t(pred.x0)}`,
-        `s_{x_0} = \\frac{s_{y/x}}{b}\\sqrt{\\frac{1}{m}+\\frac{1}{n}+\\frac{(y_0-\\bar y)^2}{b^2 S_{xx}}} = ${t(pred.sx0, 4)}`,
-        `t_{${Math.round(conf * 100)}\\%,\\,${reg.df}} = ${t(pred.t, 4)}\\quad\\Rightarrow\\quad x_0 \\pm t\\,s_{x_0} = ${t(pred.x0, 4)} \\pm ${t(pred.halfWidth, 3)}`,
-      ],
-    });
-  }
   if (mode === 'sa' && sa) {
     steps.push({
       title: 'Adición estándar: extrapolación a señal cero',

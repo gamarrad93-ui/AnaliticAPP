@@ -10,10 +10,10 @@ import { getCompound, TITRANTS, type Compound } from '../../chem/data/acids';
 import { INDICATORS, getIndicator } from '../../chem/data/indicators';
 import { compoundToComponent, genericSpecies, parsePKaList, speciesNamesOf } from '../../chem/acidbase/fromLibrary';
 import { KW, alphas, netCharge, type Component, type ProticSystem } from '../../chem/acidbase/equilibrium';
-import { equivalencePoints, mixtureAt, pHAt, titrationCurve, type TitrationSetup } from '../../chem/acidbase/titration';
+import { analyteVolumeForTitrantVolume, equivalencePoints, mixtureAt, pHAt, stoichiometricEquivalences, titrationCurve, type TitrationSetup } from '../../chem/acidbase/titration';
 import { evaluateIndicator, type Verdict } from '../../chem/acidbase/indicatorCheck';
 import { fmtFixed, fmtSig, fmtTick, niceTicks, texNum } from '../../chem/numeric/format';
-import { Alert, NumField, SelectField, Stat, Toggle } from '../components/fields';
+import { Alert, NumField, Segmented, SelectField, Stat, Toggle } from '../components/fields';
 import { AnalyteSelect, CUSTOM_ACID, CUSTOM_BASE } from '../components/AnalyteSelect';
 import { ChartCard } from '../components/ChartCard';
 import { Procedure, type Step } from '../components/Procedure';
@@ -92,6 +92,10 @@ export default function TitrationTab() {
   const a2 = useAnalyte('HCl', '0,05');
   const [mix, setMix] = useState(false);
   const Va = useNum('25');
+  // ¿Qué fija el usuario? el volumen de analito (se calcula el gasto) o el gasto de bureta (se calcula el analito)
+  const [fixMode, setFixMode] = useState<'analito' | 'gasto'>('analito');
+  const Vg = useNum('8');
+  const [peRef, setPeRef] = useState(1);
   const [titrantId, setTitrantId] = useState('NaOH');
   const Ct = useNum('0,1');
   const [autoV, setAutoV] = useState(true);
@@ -102,29 +106,63 @@ export default function TitrationTab() {
   const pHendIn = useNum(fmtFixed((ind.low + ind.high) / 2, 2));
   const [sliderV, setSliderV] = useState<number | null>(null);
 
-  const VaErr = checkNum(Va.value, Va.raw, { positive: true, max: 10000 });
   const CtErr = checkNum(Ct.value, Ct.raw, { positive: true, max: 20 });
+  const titrant0 = getCompound(titrantId)!;
+
+  // Componentes del analito (independientes del volumen)
+  const comps = useMemo(() => {
+    const c: Component[] = [];
+    const names: string[][] = [];
+    if (a1.component) {
+      c.push(a1.component);
+      names.push(a1.names);
+    }
+    if (mix && a2.component) {
+      c.push(a2.component);
+      names.push(a2.names);
+    }
+    return c.length === (mix ? 2 : 1) ? { c, names } : null;
+  }, [a1.component, a2.component, mix, a1.names, a2.names]);
+
+  // Volúmenes de equivalencia por mL de analito (los PE son proporcionales a Va)
+  const perMl = useMemo(
+    () => (comps && Ct.value && !CtErr ? stoichiometricEquivalences({ analyte: comps.c, Va: 1, titrant: compoundToComponent(titrant0, Ct.value) }) : []),
+    [comps, Ct.value, CtErr, titrant0],
+  );
+  const k = Math.min(peRef, Math.max(1, perMl.length));
+  const VgErr = fixMode === 'gasto' ? checkNum(Vg.value, Vg.raw, { positive: true, max: 10000 }) : null;
+  const VaComputed =
+    fixMode === 'gasto' && !VgErr && Vg.value != null && comps && Ct.value && !CtErr
+      ? analyteVolumeForTitrantVolume(comps.c, compoundToComponent(titrant0, Ct.value), Vg.value, k)
+      : null;
+  const VaErr =
+    fixMode === 'analito'
+      ? checkNum(Va.value, Va.raw, { positive: true, max: 10000 })
+      : VaComputed != null && VaComputed > 10000
+        ? 'Haría falta más de 10 L de analito: revisá las concentraciones.'
+        : null;
+  const VaEff = fixMode === 'analito' ? Va.value : VaComputed;
+  const VgShown = fixMode === 'analito' && Va.value != null && perMl[k - 1] ? Va.value * perMl[k - 1] : null;
+
+  /** Al cambiar de modo, el valor calculado pasa a ser el valor escrito (así nada "salta"). */
+  const switchMode = (m: 'analito' | 'gasto') => {
+    if (m === fixMode) return;
+    if (m === 'gasto' && VgShown != null) Vg.setRaw(fmtTick(Number(VgShown.toPrecision(4))));
+    if (m === 'analito' && VaComputed != null) Va.setRaw(fmtTick(Number(VaComputed.toPrecision(4))));
+    setFixMode(m);
+    setSliderV(null);
+  };
   const VmaxErr = autoV ? null : checkNum(VmaxIn.value, VmaxIn.raw, { positive: true, max: 100000 });
   const pHendErr = checkNum(pHendIn.value, pHendIn.raw, { min: -1, max: 15 });
   const titrant = getCompound(titrantId)!;
 
   // --- armado del problema (se difiere para no trabar la escritura) ---
   const setupInput = useMemo(() => {
-    const comps: Component[] = [];
-    const names: string[][] = [];
-    if (a1.component) {
-      comps.push(a1.component);
-      names.push(a1.names);
-    }
-    if (mix && a2.component) {
-      comps.push(a2.component);
-      names.push(a2.names);
-    }
-    const ok = comps.length === (mix ? 2 : 1) && !VaErr && !CtErr && !VmaxErr && Va.value && Ct.value;
+    const ok = comps && !VaErr && !VgErr && !CtErr && !VmaxErr && VaEff && Ct.value;
     if (!ok) return null;
-    const s: TitrationSetup = { analyte: comps, Va: Va.value!, titrant: compoundToComponent(titrant, Ct.value!) };
-    return { s, names, VmaxManual: autoV ? null : VmaxIn.value };
-  }, [a1.component, a2.component, mix, Va.value, Ct.value, titrant, autoV, VmaxIn.value, VaErr, CtErr, VmaxErr, a1.names, a2.names]);
+    const s: TitrationSetup = { analyte: comps.c, Va: VaEff!, titrant: compoundToComponent(titrant, Ct.value!) };
+    return { s, names: comps.names, VmaxManual: autoV ? null : VmaxIn.value };
+  }, [comps, VaEff, Ct.value, titrant, autoV, VmaxIn.value, VaErr, VgErr, CtErr, VmaxErr]);
   const deferred = useDeferredValue(setupInput);
 
   const result = useMemo(() => {
@@ -141,7 +179,7 @@ export default function TitrationTab() {
   }, [deferred]);
 
   const ok = result && !('error' in result) ? result : null;
-  const V = ok ? Math.min(sliderV ?? ok.eqInfo.eq[0].V, ok.Vmax) : 0;
+  const V = ok ? Math.min(sliderV ?? ok.eqInfo.eq[Math.min(k, ok.eqInfo.eq.length) - 1].V, ok.Vmax) : 0;
   const pHV = ok ? pHAt(ok.s, V) : NaN;
 
   const selInd = useMemo(() => {
@@ -155,9 +193,25 @@ export default function TitrationTab() {
     pHendIn.setRaw(fmtFixed((i.low + i.high) / 2, 2));
   };
 
-  const steps = useMemo<Step[]>(() => (ok ? buildSteps(ok.s, V, pHV, ok.eqInfo, deferred!.names, titrant) : []), [ok, V, pHV, deferred, titrant]);
+  const steps = useMemo<Step[]>(() => {
+    if (!ok) return [];
+    const base = buildSteps(ok.s, V, pHV, ok.eqInfo, deferred!.names, titrant);
+    if (fixMode !== 'gasto' || Vg.value == null || !perMl[k - 1]) return base;
+    return [
+      {
+        title: `Volumen de analito para gastar ${fmtSig(Vg.value, 4)} mL en el PE${perMl.length > 1 ? k : ''}`,
+        text: 'Los volúmenes de equivalencia son proporcionales al volumen de analito (mmol de analito = C·Vₐ). Se calcula el gasto que daría 1 mL de analito y se despeja Vₐ.',
+        tex: [
+          `V_{PE${perMl.length > 1 ? k : ''}}\ \text{por mL de analito} = ${texNum(perMl[k - 1], 5)}\ \mathrm{mL/mL}`,
+          `V_a = \frac{V_{\text{gasto}}}{${texNum(perMl[k - 1], 5)}} = \frac{${texNum(Vg.value, 4)}}{${texNum(perMl[k - 1], 5)}} = ${texNum(ok.s.Va, 5)}\ \mathrm{mL}`,
+        ],
+      },
+      ...base,
+    ];
+  }, [ok, V, pHV, deferred, titrant, fixMode, Vg.value, perMl, k]);
 
-  const anyErr = a1.cErr || a1.pkaErr || (mix && (a2.cErr || a2.pkaErr)) || VaErr || CtErr || VmaxErr;
+  const anyErr = a1.cErr || a1.pkaErr || (mix && (a2.cErr || a2.pkaErr)) || VaErr || VgErr || CtErr || VmaxErr;
+  const gastoNoPE = fixMode === 'gasto' && comps && Ct.value && !CtErr && perMl.length === 0;
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(280px,360px)_1fr]">
@@ -166,7 +220,45 @@ export default function TitrationTab() {
         <section className="card space-y-3">
           <h2 className="card-title">Analito</h2>
           <AnalyteInputs a={a1} title="Sustancia a titular" />
-          <NumField label="Volumen de analito" value={Va.raw} onChange={Va.setRaw} unit="mL" error={VaErr} />
+          <div>
+            <span className="label">¿Qué fijás?</span>
+            <Segmented
+              ariaLabel="Qué volumen fijás"
+              value={fixMode}
+              onChange={switchMode}
+              options={[
+                { value: 'analito', label: 'Volumen de analito' },
+                { value: 'gasto', label: 'Gasto de bureta' },
+              ]}
+            />
+          </div>
+          <NumField
+            label={fixMode === 'analito' ? 'Volumen de analito' : 'Volumen de analito a tomar (calculado)'}
+            value={fixMode === 'analito' ? Va.raw : VaComputed != null ? fmtSig(VaComputed, 4) : '—'}
+            onChange={Va.setRaw}
+            unit="mL"
+            error={VaErr}
+            disabled={fixMode !== 'analito'}
+          />
+          <NumField
+            label={fixMode === 'gasto' ? `Gasto de bureta deseado (en el PE${perMl.length > 1 ? k : ''})` : `Gasto de bureta en el PE${perMl.length > 1 ? k : ''} (calculado)`}
+            value={fixMode === 'gasto' ? Vg.raw : VgShown != null ? fmtSig(VgShown, 4) : '—'}
+            onChange={Vg.setRaw}
+            unit="mL"
+            error={VgErr}
+            disabled={fixMode !== 'gasto'}
+            hint={fixMode === 'gasto' ? 'Ej.: 8 mL. La app calcula cuánto analito tomar para gastar eso en la bureta.' : 'Elegí "Gasto de bureta" para fijar este valor y calcular el analito.'}
+          />
+          {perMl.length > 1 && (
+            <SelectField
+              label="Punto de equivalencia de referencia"
+              value={String(k)}
+              onChange={(v) => setPeRef(Number(v))}
+              options={perMl.map((_, i) => ({ value: String(i + 1), label: `PE${i + 1}` }))}
+            />
+          )}
+          {gastoNoPE && <Alert kind="warn">Este titulante no reacciona con el analito: no se puede calcular el volumen.</Alert>}
+          {fixMode === 'gasto' && VaComputed != null && VaComputed < 2 && <Alert kind="warn">Menos de 2 mL de analito es difícil de medir con exactitud: conviene diluir el titulante o elegir un gasto mayor.</Alert>}
           <Toggle label="Mezcla: agregar un segundo componente" checked={mix} onChange={setMix} />
           {mix && <AnalyteInputs a={a2} title="Segundo componente" />}
         </section>

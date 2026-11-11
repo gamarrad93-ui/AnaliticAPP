@@ -95,6 +95,32 @@ function titratableSites(s: TitrationSetup, dir: Direction, names?: string[][]):
   return sites;
 }
 
+/**
+ * Volúmenes de equivalencia estequiométricos (mL), sin calcular pH.
+ * Son proporcionales a Va: V_PEk = Va · (Σ mmol de sitios por mL de analito) / (n·C_t).
+ */
+export function stoichiometricEquivalences(s: TitrationSetup): number[] {
+  const dir = titrantDirection(s.titrant);
+  const tEq = s.titrant.kind === 'weak' ? 1 : s.titrant.n;
+  let cum = 0;
+  return titratableSites(s, dir).map((site) => {
+    cum += site.moles;
+    return cum / (s.titrant.C * tEq);
+  });
+}
+
+/**
+ * Cálculo inverso: ¿cuántos mL de analito hay que tomar para gastar `Vgasto` mL de titulante
+ * en el punto de equivalencia número `k` (1 = primero)? Como V_PE es proporcional a Va:
+ *   Va = Vgasto / (V_PEk con Va = 1 mL)
+ * Devuelve null si ese punto de equivalencia no existe.
+ */
+export function analyteVolumeForTitrantVolume(analyte: Component[], titrant: Component, Vgasto: number, k = 1): number | null {
+  const perMl = stoichiometricEquivalences({ analyte, Va: 1, titrant });
+  if (k < 1 || k > perMl.length || !(perMl[k - 1] > 0)) return null;
+  return Vgasto / perMl[k - 1];
+}
+
 export type Sharpness = 'nitido' | 'poco-nitido' | 'no-detectable';
 
 export interface EquivalencePoint {

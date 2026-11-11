@@ -47,6 +47,14 @@ Abreviaturas: *exacto* = resultado del motor sin aproximaciones; *ref.* = valor 
 - **H₃PO₄ 0,1 M con NaOH:** equivalencias en 25, 50 y 75 mL; la 1ª y la 2ª son detectables, la 3ª no (pKa3 = 12,35). pH en PE1 ≈ 4,7 y en PE2 ≈ 9,7 (Harris).
 - **Mezcla HCl + ácido acético:** primero se titula el HCl (10 mL) y después el acético (20 mL).
 
+### Cálculo inverso: "¿cuánto analito tomo para gastar X mL en la bureta?"
+Como los volúmenes de equivalencia son proporcionales al volumen de analito, Vₐ = V_gasto / (V_PE por mL de analito).
+- Acético 0,1 M con NaOH 0,1 M: gastar 8 mL → tomar 8 mL.
+- HCl 0,05 M con NaOH 0,1 M: gastar 8 mL → tomar 16 mL.
+- H₃PO₄ 0,1 M con NaOH 0,1 M: 8 mL en el PE1 → 8 mL; 8 mL en el PE2 → 4 mL; el PE4 no existe → aviso.
+- Mezcla HCl + acético: con el Vₐ calculado, el PE2 cae exactamente en el gasto pedido (ida y vuelta).
+- Titulante que no reacciona → aviso, sin error.
+
 ### Diseñador de buffers
 - Acetato a pH 4,76: mezcla ~50/50.
 - **El buffer diseñado da exactamente el pH buscado**: se vuelve a calcular el pH de la mezcla propuesta con el motor general y coincide con 8 decimales (fosfato pH 7,0; 7,4; 6,5).

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { alphas, solvePH, bufferCapacity, KW, type Component } from '../acidbase/equilibrium';
-import { pHAt, volumeAtPH, equivalencePoints, titrationCurve, type TitrationSetup } from '../acidbase/titration';
+import { pHAt, volumeAtPH, equivalencePoints, titrationCurve, analyteVolumeForTitrantVolume, stoichiometricEquivalences, type TitrationSetup } from '../acidbase/titration';
 import { designBuffer } from '../acidbase/buffer';
 import { evaluateIndicator } from '../acidbase/indicatorCheck';
 import { getIndicator } from '../data/indicators';
@@ -197,5 +197,29 @@ describe('Diseñador de buffers', () => {
     const beta = bufferCapacity(comps, 4.76);
     const h = 10 ** -4.76;
     expect(beta).toBeCloseTo(Math.LN10 * (0.1 / 4 + h + KW / h), 8);
+  });
+});
+
+describe('Cálculo inverso: volumen de analito para un gasto de bureta dado', () => {
+  it('acético 0,1 M con NaOH 0,1 M: para gastar 8 mL hay que tomar 8 mL', () => {
+    expect(analyteVolumeForTitrantVolume([HAc(0.1)], NaOH(0.1), 8)).toBeCloseTo(8, 12);
+  });
+  it('HCl 0,05 M con NaOH 0,1 M: gastar 8 mL → 16 mL de analito', () => {
+    expect(analyteVolumeForTitrantVolume([HCl(0.05)], NaOH(0.1), 8)).toBeCloseTo(16, 12);
+  });
+  it('H3PO4 0,1 M con NaOH 0,1 M: 8 mL en el PE1 → 8 mL; 8 mL en el PE2 → 4 mL', () => {
+    const H3PO4: Component = { kind: 'weak', C: 0.1, system: phosphoric, hAdded: 3 };
+    expect(analyteVolumeForTitrantVolume([H3PO4], NaOH(0.1), 8, 1)).toBeCloseTo(8, 12);
+    expect(analyteVolumeForTitrantVolume([H3PO4], NaOH(0.1), 8, 2)).toBeCloseTo(4, 12);
+    expect(analyteVolumeForTitrantVolume([H3PO4], NaOH(0.1), 8, 4)).toBeNull();
+  });
+  it('ida y vuelta: con el Va calculado, la equivalencia cae exactamente en el gasto pedido', () => {
+    const comps = [HCl(0.05), HAc(0.05)];
+    const Va = analyteVolumeForTitrantVolume(comps, NaOH(0.1), 8, 2)!;
+    expect(stoichiometricEquivalences({ analyte: comps, Va, titrant: NaOH(0.1) })[1]).toBeCloseTo(8, 12);
+    expect(equivalencePoints({ analyte: comps, Va, titrant: NaOH(0.1) }).eq[1].V).toBeCloseTo(8, 12);
+  });
+  it('titulante sin reacción → null', () => {
+    expect(analyteVolumeForTitrantVolume([HCl(0.1)], HCl(0.1), 8)).toBeNull();
   });
 });

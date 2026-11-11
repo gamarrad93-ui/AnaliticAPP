@@ -10,6 +10,8 @@ export function NumField(props: {
   hint?: ReactNode;
   placeholder?: string;
   className?: string;
+  /** campo bloqueado: muestra un valor calculado */
+  disabled?: boolean;
 }) {
   const id = useId();
   return (
@@ -22,7 +24,8 @@ export function NumField(props: {
           id={id}
           inputMode="decimal"
           autoComplete="off"
-          className={`input font-mono ${props.error ? 'input-error' : ''}`}
+          className={`input font-mono ${props.error ? 'input-error' : ''} ${props.disabled ? 'cursor-not-allowed bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' : ''}`}
+          disabled={props.disabled}
           value={props.value}
           placeholder={props.placeholder}
           onChange={(e) => props.onChange(e.target.value)}

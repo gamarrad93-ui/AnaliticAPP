@@ -3,7 +3,8 @@
  */
 import { useDeferredValue, useMemo, useState } from 'react';
 import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from 'recharts';
-import { parseTable, parseList } from '../../chem/numeric/table';
+import { parseList } from '../../chem/numeric/table';
+import { DataGrid, emptyGrid, gridFromText, gridToPoints } from '../components/DataGrid';
 import { detectionLimits, inversePrediction, linearRegression, standardAddition, type Regression } from '../../chem/stats/regression';
 import { fmtFixed, fmtSig, fmtTick, niceTicks, texNum } from '../../chem/numeric/format';
 import { formatWithUncertainty } from '../../chem/stats/sigfigs';
@@ -38,21 +39,20 @@ type Conf = '0.90' | '0.95' | '0.99';
 export default function CalibrationTab() {
   const th = useChartTheme();
   const [mode, setMode] = useState<Mode>('cal');
-  const [textCal, setTextCal] = useState(EXAMPLE_CAL);
-  const [textSA, setTextSA] = useState(EXAMPLE_SA);
-  const text = mode === 'cal' ? textCal : textSA;
-  const setText = mode === 'cal' ? setTextCal : setTextSA;
+  const [gridCal, setGridCal] = useState(() => gridFromText(EXAMPLE_CAL));
+  const [gridSA, setGridSA] = useState(() => gridFromText(EXAMPLE_SA));
+  const grid = mode === 'cal' ? gridCal : gridSA;
+  const setGrid = mode === 'cal' ? setGridCal : setGridSA;
   const [xUnit, setXUnit] = useState('');
   const [conf, setConf] = useState<Conf>('0.95');
   const [y0raw, setY0raw] = useState('13,5');
   const dil = useNum('1');
   const dilErr = mode === 'sa' ? checkNum(dil.value, dil.raw, { positive: true }) : null;
 
-  const dText = useDeferredValue(text);
-  const table = useMemo(() => parseTable(dText), [dText]);
-  const header = table.header;
-  const xLabel = header?.[0] ?? 'x';
-  const yLabel = header?.[1] ?? 'y';
+  const dGrid = useDeferredValue(grid);
+  const table = useMemo(() => gridToPoints(dGrid), [dGrid]);
+  const xLabel = grid.xName.trim() || 'x';
+  const yLabel = grid.yName.trim() || 'y';
   const unit = xUnit || (xLabel.match(/\(([^)]+)\)/)?.[1] ?? '');
 
   const fit = useMemo(() => {
@@ -108,15 +108,15 @@ export default function CalibrationTab() {
         <div className="space-y-4">
           <section className="card space-y-3">
             <h2 className="card-title">Datos</h2>
-            <label className="label" htmlFor="xydata">
-              {mode === 'cal' ? 'Pegá dos columnas: concentración (x) y señal (y)' : 'Pegá: concentración agregada (x) y señal (y)'}
-            </label>
-            <textarea id="xydata" className="input h-56 font-mono text-sm" value={text} onChange={(e) => setText(e.target.value)} spellCheck={false} />
-            <p className="text-xs text-slate-600 dark:text-slate-400">Se aceptan tabulación (Excel), punto y coma o espacios como separador, y coma o punto decimal. La primera fila puede ser un encabezado.</p>
-            {table.skipped.length > 0 && <Alert kind="warn">Se ignoraron {table.skipped.length} línea(s) que no se pudieron leer: {table.skipped.map((s) => `línea ${s.line}`).join(', ')}.</Alert>}
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {mode === 'cal' ? 'Concentración de cada estándar y su señal.' : 'Concentración agregada en cada solución y su señal.'} <strong>Enter</strong> pasa a la celda siguiente. También podés pegar dos columnas desde Excel o Google Sheets. Los nombres de las columnas se editan tocándolos.
+            </p>
+            <DataGrid value={grid} onChange={setGrid} />
+            {table.invalid.length > 0 && <Alert kind="warn">Fila(s) {table.invalid.join(', ')}: hay un valor que no es un número (se ignora{table.invalid.length > 1 ? 'n' : ''}).</Alert>}
+            {table.incomplete.length > 0 && <Alert kind="warn">Fila(s) {table.incomplete.join(', ')}: falta completar x o y (se ignora{table.incomplete.length > 1 ? 'n' : ''}).</Alert>}
             <div className="flex flex-wrap gap-2">
-              <button className="btn" onClick={() => setText(mode === 'cal' ? EXAMPLE_CAL : EXAMPLE_SA)}>Cargar ejemplo</button>
-              <button className="btn" onClick={() => setText('')}>Borrar</button>
+              <button className="btn" onClick={() => setGrid(gridFromText(mode === 'cal' ? EXAMPLE_CAL : EXAMPLE_SA))}>Cargar ejemplo</button>
+              <button className="btn" onClick={() => setGrid(emptyGrid())}>Vaciar tabla</button>
             </div>
             <NumField label="Unidad de concentración (opcional)" value={xUnit} onChange={setXUnit} placeholder={unit || 'mg/L'} />
             <div>

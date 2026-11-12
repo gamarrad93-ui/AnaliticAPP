@@ -9,6 +9,7 @@ Funciona en la computadora, en el proyector (botón **📽️ Modo proyector**) 
 
 | Pestaña | Qué hace |
 |---|---|
+| 🧫 **Prácticos** | Los 13 prácticos de la Cuaderneta de Laboratorio 2026: diagramación (cuánto tomar para gastar ≈ 8 mL en bureta de 10,00 mL), planilla de determinaciones y tratamiento estadístico con el criterio de cada práctico (Ir = 2,8·σr, Q de Dixon, CV), especificaciones (USP, RBN), V20 con factor Z, derivadas de la valoración potenciométrica y los 4 modelos de calibración. |
 | 🧪 **Titulaciones** | Curvas ácido-base exactas (fuertes, débiles, polipróticos, mezclas). Puntos de equivalencia y semiequivalencia, 1ª derivada, pH a cualquier volumen, bandas de indicadores, "¿Qué indicador sirve?" y error de titulación. |
 | 📊 **Especies y buffers** | Diagrama de distribución (α y log C vs pH) con pKa editables. Diseñador de buffers: par conjugado óptimo, gramos/mL a pesar, capacidad buffer. |
 | 📈 **Calibración** | Mínimos cuadrados: pendiente, ordenada, sus errores, r, R² y residuos, con tabla editable tipo planilla. Adición estándar con intervalo de confianza. Pegar desde Excel, exportar a PNG y CSV. |
@@ -30,7 +31,8 @@ src/
     numeric/     ← solver de Brent, lectura de números con coma, tablas pegadas
     acidbase/    ← balance de carga exacto, titulaciones, buffers, indicadores
     data/        ← biblioteca de ácidos/bases (pKa) e indicadores
-    stats/       ← regresión, t, F, Q, Grubbs, propagación, cifras significativas
+    stats/       ← regresión, modelos de calibración, t, F, Q, Grubbs, propagación, cifras significativas
+    lab/         ← fórmulas de la cuaderneta, criterios de promediabilidad, V20, derivadas
     redox/       ← Nernst + balance de electrones
     complex/     ← EDTA (α, constantes condicionales)
     solubility/  ← Ksp, ion común, pH, argentometría
@@ -38,6 +40,7 @@ src/
   ui/
     components/  ← campos, gráficos, panel de procedimiento, exportar
     tabs/        ← una pestaña por archivo
+    practicas/   ← los 13 prácticos de laboratorio
   config.ts      ← nombre del autor y del profesor (para cambiar fácil)
 ```
 

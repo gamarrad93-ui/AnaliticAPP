@@ -3,6 +3,7 @@ import { APP_NAME, AUTHOR, COURSE, PROFESSOR } from './config';
 import { useDisplay } from './ui/display';
 
 // Cada pestaña se carga sólo cuando se abre (la app inicia más rápido en el celular)
+const PracticesTab = lazy(() => import('./ui/tabs/PracticesTab'));
 const TitrationTab = lazy(() => import('./ui/tabs/TitrationTab'));
 const SpeciesTab = lazy(() => import('./ui/tabs/SpeciesTab'));
 const CalibrationTab = lazy(() => import('./ui/tabs/CalibrationTab'));
@@ -13,6 +14,7 @@ const SolubilityTab = lazy(() => import('./ui/tabs/SolubilityTab'));
 const AboutTab = lazy(() => import('./ui/tabs/AboutTab'));
 
 const TABS = [
+  { id: 'practicos', label: 'Prácticos', icon: '🧫', C: PracticesTab },
   { id: 'titulaciones', label: 'Titulaciones', icon: '🧪', C: TitrationTab },
   { id: 'especies', label: 'Especies y buffers', icon: '📊', C: SpeciesTab },
   { id: 'calibracion', label: 'Calibración', icon: '📈', C: CalibrationTab },
@@ -27,8 +29,8 @@ type TabId = (typeof TABS)[number]['id'];
 
 /** La pestaña activa queda en la URL (#calibracion) para poder compartir el link directo. */
 function tabFromHash(): TabId {
-  const h = window.location.hash.replace('#', '');
-  return (TABS.find((t) => t.id === h)?.id ?? 'titulaciones') as TabId;
+  const h = window.location.hash.replace('#', '').split('?')[0];
+  return (TABS.find((t) => t.id === h)?.id ?? 'practicos') as TabId;
 }
 
 export default function App() {
@@ -52,11 +54,21 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="z-20 lg:sticky lg:top-0 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2">
+      <header className="relative z-20 overflow-hidden border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 lg:sticky lg:top-0">
+        <div className="h-1 bg-gradient-to-r from-brand-700 via-celeste to-turquesa" aria-hidden />
+        <div className="relative">
+        {/* Bandas diagonales en azules, como la plantilla de los teóricos del curso */}
+        <svg aria-hidden className="pointer-events-none absolute right-0 top-0 hidden h-full w-96 opacity-90 sm:block" viewBox="0 0 400 100" preserveAspectRatio="none">
+          <polygon points="250,0 400,0 400,100 190,100" fill="#b0d1f1" opacity="0.55" />
+          <polygon points="300,0 400,0 400,100 250,100" fill="#4a92d4" opacity="0.7" />
+          <polygon points="340,0 400,0 400,100 300,100" fill="#0f6fc6" />
+          <polygon points="372,0 400,0 400,100 352,100" fill="#009dd9" />
+          <line x1="215" y1="0" x2="160" y2="100" stroke="#0f6fc6" strokeWidth="1" opacity="0.5" />
+        </svg>
+        <div className="relative mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2">
           <div>
-            <h1 className="text-xl font-bold text-teal-800 dark:text-teal-300">⚗️ {APP_NAME}</h1>
-            <p className="text-xs text-slate-600 dark:text-slate-400">{COURSE}</p>
+            <h1 className="font-titulo text-2xl text-brand-700 dark:text-brand-300">⚗️ {APP_NAME}</h1>
+            <p className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">{COURSE}</p>
           </div>
           <div className="flex items-center gap-2">
             <button className={`btn ${projector ? 'btn-primary' : ''}`} onClick={() => setProjector(!projector)} aria-pressed={projector} title="Letra grande y líneas gruesas para proyectar en clase">
@@ -67,14 +79,15 @@ export default function App() {
             </button>
           </div>
         </div>
-        <nav ref={navRef} className="mx-auto max-w-7xl overflow-x-auto px-2" aria-label="Secciones">
+        </div>
+        <nav ref={navRef} className="relative mx-auto max-w-7xl overflow-x-auto px-2" aria-label="Secciones">
           <ul className="flex gap-1 whitespace-nowrap">
             {TABS.map((t) => (
               <li key={t.id}>
                 <button
                   onClick={() => go(t.id)}
                   aria-current={tab === t.id ? 'page' : undefined}
-                  className={`border-b-4 px-3 py-2 text-sm font-semibold transition-colors ${tab === t.id ? 'border-teal-700 text-teal-800 dark:border-teal-400 dark:text-teal-300' : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}
+                  className={`border-b-4 px-3 py-2 text-sm font-semibold transition-colors ${tab === t.id ? 'border-brand-700 text-brand-800 dark:border-brand-400 dark:text-brand-300' : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}
                 >
                   <span aria-hidden>{t.icon}</span> {t.label}
                 </button>

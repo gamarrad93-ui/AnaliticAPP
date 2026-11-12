@@ -376,7 +376,7 @@ function Propagation() {
                 {result.r.terms.map((t) => (
                   <tr key={t.name}>
                     <td className="font-mono">{t.name}</td><td className="font-mono">{fmtSig(t.derivative, 4)}</td><td className="font-mono">{fmtSig(t.contribution, 3)}</td>
-                    <td><div className="flex items-center gap-2"><div className="h-2 rounded bg-teal-600" style={{ width: `${Math.max(1, t.percent)}%`, maxWidth: '8rem' }} /><span className="whitespace-nowrap font-mono">{fmtFixed(t.percent, 1)} %</span></div></td>
+                    <td><div className="flex items-center gap-2"><div className="h-2 rounded bg-brand-600" style={{ width: `${Math.max(1, t.percent)}%`, maxWidth: '8rem' }} /><span className="whitespace-nowrap font-mono">{fmtFixed(t.percent, 1)} %</span></div></td>
                   </tr>
                 ))}
               </tbody>

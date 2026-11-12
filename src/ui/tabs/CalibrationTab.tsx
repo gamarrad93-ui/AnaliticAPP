@@ -5,6 +5,8 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from 'recharts';
 import { DataGrid, emptyGrid, gridFromText, gridToPoints } from '../components/DataGrid';
 import { linearRegression, standardAddition, type Regression } from '../../chem/stats/regression';
+import { MODEL_LABELS, fitAllModels } from '../../chem/stats/calibrationModels';
+import { modelEquation } from '../practicas/CalibrationPractice';
 import { fmtFixed, fmtSig, fmtTick, niceTicks, texNum } from '../../chem/numeric/format';
 import { formatWithUncertainty } from '../../chem/stats/sigfigs';
 import { Alert, NumField, Segmented, Stat } from '../components/fields';
@@ -22,6 +24,16 @@ const EXAMPLE_CAL = `Concentración (pg/mL)\tFluorescencia
 8\t17,3
 10\t21,0
 12\t24,7`;
+
+/** Ejercicio 3 del Práctico de Curvas de Calibración (cuaderneta 2026): Cr por AAS, promedio de 3 lecturas. */
+const EXAMPLE_CR = `C Cr (ppm)\tA (promedio)
+0,0\t0,0248
+0,5\t0,05447
+1,0\t0,09533
+2,5\t0,2544
+5,0\t0,4883
+7,5\t0,7557
+10,0\t0,9203`;
 
 const EXAMPLE_SA = `Ag agregada (ng/mL)\tAbsorbancia
 0\t0,32
@@ -107,6 +119,7 @@ export default function CalibrationTab() {
             {table.incomplete.length > 0 && <Alert kind="warn">Fila(s) {table.incomplete.join(', ')}: falta completar x o y (se ignora{table.incomplete.length > 1 ? 'n' : ''}).</Alert>}
             <div className="flex flex-wrap gap-2">
               <button className="btn" onClick={() => setGrid(gridFromText(mode === 'cal' ? EXAMPLE_CAL : EXAMPLE_SA))}>Cargar ejemplo</button>
+              {mode === 'cal' && <button className="btn" onClick={() => setGrid(gridFromText(EXAMPLE_CR))}>Ejercicio de Cr (cuaderneta)</button>}
               <button className="btn" onClick={() => setGrid(emptyGrid())}>Vaciar tabla</button>
             </div>
             {mode === 'sa' && <NumField label="Unidad de concentración (opcional)" value={xUnit} onChange={setXUnit} placeholder={unit || 'mg/L'} />}
@@ -176,6 +189,21 @@ export default function CalibrationTab() {
                   </ComposedChart>
                 </ResponsiveContainer>
               </ChartCard>
+
+              {mode === 'cal' && 'x' in fit && (
+                <section className="card overflow-x-auto">
+                  <h3 className="card-title">Comparar modelos de ajuste</h3>
+                  <table className="table-basic">
+                    <thead><tr><th>Modelo</th><th>Ecuación</th><th>R²</th><th>s residuos</th></tr></thead>
+                    <tbody>
+                      {fitAllModels(fit.x, fit.y).map((f) => (
+                        <tr key={f.id}><td>{MODEL_LABELS[f.id]}</td><td className="font-mono">{modelEquation(f, 'x').replace('A =', 'y =')}</td><td className="font-mono">{fmtFixed(f.r2, 5)}</td><td className="font-mono">{fmtSig(f.sres, 3)}</td></tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">Como pide la cuaderneta: elegir el modelo por inspección visual, R² y residuos. En los modelos sin ordenada el R² se calcula sin centrar (igual que Excel), así que no se compara directamente con los otros. El resto de esta pestaña usa el modelo lineal con ordenada.</p>
+                </section>
+              )}
 
               <ChartCard title="Gráfico de residuos (y − ŷ)" filename="residuos.png">
                 <ResponsiveContainer width="100%" height={Math.round(th.height * 0.55)}>

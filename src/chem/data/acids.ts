@@ -3,6 +3,7 @@
  * Valores de pKa a 25 °C (fuerza iónica → 0), tomados de tablas estándar
  * (Harris, "Quantitative Chemical Analysis"; Skoog et al., "Fundamentos de Química Analítica").
  * Pequeñas diferencias (±0,02) entre libros son normales.
+ * Reactivos concentrados (% y densidad): tabla de la Cuaderneta de Laboratorio QA I 2026.
  */
 import type { ProticSystem } from '../acidbase/equilibrium';
 
@@ -73,13 +74,13 @@ export interface Compound {
 export const COMPOUNDS: Compound[] = [
   // Fuertes
   { id: 'HCl', name: 'Ácido clorhídrico', formula: 'HCl', kind: 'strong-acid', n: 1, M: 36.46, liquid: { purity: 37, density: 1.19 } },
-  { id: 'HNO3', name: 'Ácido nítrico', formula: 'HNO₃', kind: 'strong-acid', n: 1, M: 63.01, liquid: { purity: 65, density: 1.39 } },
+  { id: 'HNO3', name: 'Ácido nítrico', formula: 'HNO₃', kind: 'strong-acid', n: 1, M: 63.01, liquid: { purity: 65, density: 1.42 } },
   { id: 'HClO4', name: 'Ácido perclórico', formula: 'HClO₄', kind: 'strong-acid', n: 1, M: 100.46, liquid: { purity: 70, density: 1.67 } },
   { id: 'NaOH', name: 'Hidróxido de sodio', formula: 'NaOH', kind: 'strong-base', n: 1, M: 40.0 },
   { id: 'KOH', name: 'Hidróxido de potasio', formula: 'KOH', kind: 'strong-base', n: 1, M: 56.11 },
   { id: 'BaOH2', name: 'Hidróxido de bario', formula: 'Ba(OH)₂', kind: 'strong-base', n: 2, M: 171.34 },
   // Débiles (forma ácida)
-  { id: 'CH3COOH', name: 'Ácido acético', formula: 'CH₃COOH', kind: 'weak', systemId: 'acetico', hAdded: 1, M: 60.05, liquid: { purity: 99.8, density: 1.049 } },
+  { id: 'CH3COOH', name: 'Ácido acético', formula: 'CH₃COOH', kind: 'weak', systemId: 'acetico', hAdded: 1, M: 60.05, liquid: { purity: 99.5, density: 1.05 } },
   { id: 'HCOOH', name: 'Ácido fórmico', formula: 'HCOOH', kind: 'weak', systemId: 'formico', hAdded: 1, M: 46.03, liquid: { purity: 98, density: 1.22 } },
   { id: 'C6H5COOH', name: 'Ácido benzoico', formula: 'C₆H₅COOH', kind: 'weak', systemId: 'benzoico', hAdded: 1, M: 122.12 },
   { id: 'HLac', name: 'Ácido láctico', formula: 'C₃H₆O₃', kind: 'weak', systemId: 'lactico', hAdded: 1, M: 90.08 },
@@ -95,7 +96,7 @@ export const COMPOUNDS: Compound[] = [
   { id: 'H2Tar', name: 'Ácido tartárico', formula: 'C₄H₆O₆', kind: 'weak', systemId: 'tartarico', hAdded: 2, M: 150.09 },
   { id: 'H2Mal', name: 'Ácido maleico', formula: 'C₄H₄O₄', kind: 'weak', systemId: 'maleico', hAdded: 2, M: 116.07 },
   { id: 'H2SO4', name: 'Ácido sulfúrico', formula: 'H₂SO₄', kind: 'weak', systemId: 'sulfurico', hAdded: 2, M: 98.08, liquid: { purity: 98, density: 1.84 } },
-  { id: 'H3PO4', name: 'Ácido fosfórico', formula: 'H₃PO₄', kind: 'weak', systemId: 'fosforico', hAdded: 3, M: 98.0, liquid: { purity: 85, density: 1.69 } },
+  { id: 'H3PO4', name: 'Ácido fosfórico', formula: 'H₃PO₄', kind: 'weak', systemId: 'fosforico', hAdded: 3, M: 98.0, liquid: { purity: 85, density: 1.7 } },
   { id: 'H3Cit', name: 'Ácido cítrico monohidratado', formula: 'C₆H₈O₇·H₂O', kind: 'weak', systemId: 'citrico', hAdded: 3, M: 210.14 },
   { id: 'Gly', name: 'Glicina', formula: 'H₂NCH₂COOH', kind: 'weak', systemId: 'glicina', hAdded: 1, M: 75.07 },
   // Débiles (sales / bases)
@@ -105,7 +106,7 @@ export const COMPOUNDS: Compound[] = [
   { id: 'NaF', name: 'Fluoruro de sodio', formula: 'NaF', kind: 'weak', systemId: 'fluorhidrico', hAdded: 0, M: 41.99 },
   { id: 'NaClO', name: 'Hipoclorito de sodio', formula: 'NaClO', kind: 'weak', systemId: 'hipocloroso', hAdded: 0, M: 74.44 },
   { id: 'NaCN', name: 'Cianuro de sodio', formula: 'NaCN', kind: 'weak', systemId: 'cianhidrico', hAdded: 0, M: 49.01 },
-  { id: 'NH3', name: 'Amoníaco', formula: 'NH₃', kind: 'weak', systemId: 'amonio', hAdded: 0, M: 17.03, liquid: { purity: 25, density: 0.91 } },
+  { id: 'NH3', name: 'Amoníaco', formula: 'NH₃', kind: 'weak', systemId: 'amonio', hAdded: 0, M: 17.03, liquid: { purity: 28, density: 0.9 } },
   { id: 'NH4Cl', name: 'Cloruro de amonio', formula: 'NH₄Cl', kind: 'weak', systemId: 'amonio', hAdded: 1, M: 53.49 },
   { id: 'CH3NH2', name: 'Metilamina', formula: 'CH₃NH₂', kind: 'weak', systemId: 'metilamina', hAdded: 0, M: 31.06 },
   { id: 'Py', name: 'Piridina', formula: 'C₅H₅N', kind: 'weak', systemId: 'piridina', hAdded: 0, M: 79.1, liquid: { purity: 99.8, density: 0.982 } },

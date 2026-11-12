@@ -56,7 +56,7 @@ export function useChartTheme() {
     grid: dark ? '#334155' : '#e2e8f0',
     text: dark ? '#f1f5f9' : '#0f172a',
     bg: dark ? '#0f172a' : '#ffffff',
-    main: dark ? '#5eead4' : '#0f766e',
+    main: dark ? '#80b4e7' : '#0f6fc6',
     accent: dark ? '#fca5a5' : '#b91c1c',
     muted: dark ? '#94a3b8' : '#64748b',
     height: projector ? 520 : 380,
@@ -69,7 +69,7 @@ export function useChartTheme() {
  * Paleta categórica accesible (Okabe-Ito, segura para daltonismo).
  * Se usa para las especies del diagrama de distribución.
  */
-export const SERIES_COLORS_LIGHT = ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#E69F00', '#56B4E9', '#000000'];
+export const SERIES_COLORS_LIGHT = ['#0F6FC6', '#D55E00', '#009E73', '#CC79A7', '#E69F00', '#56B4E9', '#000000'];
 export const SERIES_COLORS_DARK = ['#56B4E9', '#FF8C42', '#2EC4A0', '#E39BC5', '#F2B33D', '#9ED8F7', '#FFFFFF'];
 export function useSeriesColors() {
   const { dark } = useDisplay();

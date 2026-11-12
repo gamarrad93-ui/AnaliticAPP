@@ -147,7 +147,7 @@ export default function RedoxTab() {
 
             <section className="card">
               <label className="label" htmlFor="vred">Volumen: <strong className="font-mono">{fmtFixed(V, 2)} mL</strong> → E = <strong className="font-mono">{fmtFixed(EV - ref.E, 3)} V vs {ref.id}</strong></label>
-              <input id="vred" type="range" min={res.Vmax / 1000} max={res.Vmax} step={res.Vmax / 2000} value={V} onChange={(e) => setVsel(Number(e.target.value))} className="w-full accent-teal-700" />
+              <input id="vred" type="range" min={res.Vmax / 1000} max={res.Vmax} step={res.Vmax / 2000} value={V} onChange={(e) => setVsel(Number(e.target.value))} className="w-full accent-brand-700" />
               <div className="mt-2 flex flex-wrap gap-2">
                 <button className="btn" onClick={() => setVsel(res.Veq / 2)}>Ir a ½PE</button>
                 <button className="btn" onClick={() => setVsel(res.Veq)}>Ir a PE</button>
@@ -168,7 +168,7 @@ export default function RedoxTab() {
                 <thead><tr><th>Indicador</th><th>E° (V vs ENH)</th><th>V final</th><th>Error</th><th>Veredicto</th></tr></thead>
                 <tbody>
                   {res.indRes.map((r) => (
-                    <tr key={r.ind.id} className={r.ind.id === indId ? 'bg-teal-50 dark:bg-teal-950/40' : ''}>
+                    <tr key={r.ind.id} className={r.ind.id === indId ? 'bg-brand-50 dark:bg-brand-950/40' : ''}>
                       <td><button className="text-left hover:underline" onClick={() => setIndId(r.ind.id)}>{r.ind.name}</button></td>
                       <td className="font-mono">{fmtFixed(r.ind.E0, 2)}</td>
                       <td className="font-mono">{r.Vend == null ? '—' : `${fmtFixed(r.Vend, 3)} mL`}</td>

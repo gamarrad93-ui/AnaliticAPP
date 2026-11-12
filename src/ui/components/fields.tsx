@@ -85,7 +85,7 @@ export function SelectField<T extends string>(props: {
 export function Toggle(props: { label: ReactNode; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="inline-flex cursor-pointer select-none items-center gap-2 text-sm">
-      <input type="checkbox" className="h-4 w-4 accent-teal-700" checked={props.checked} onChange={(e) => props.onChange(e.target.checked)} />
+      <input type="checkbox" className="h-4 w-4 accent-brand-700" checked={props.checked} onChange={(e) => props.onChange(e.target.checked)} />
       {props.label}
     </label>
   );
@@ -100,7 +100,7 @@ export function Segmented<T extends string>(props: { value: T; onChange: (v: T) 
           role="radio"
           aria-checked={props.value === o.value}
           onClick={() => props.onChange(o.value)}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium ${props.value === o.value ? 'bg-teal-700 text-white dark:bg-teal-600' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium ${props.value === o.value ? 'bg-brand-700 text-white dark:bg-brand-600' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}
         >
           {o.label}
         </button>

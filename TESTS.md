@@ -160,5 +160,39 @@ Intervalo de confianza de la media: x̄ ± t·s/√n verificado a mano.
 
 ---
 
+## 4. Prácticos de laboratorio (`src/chem/__tests__/lab.test.ts`)
+
+Fórmulas y criterios tomados de la **Cuaderneta de Ejercicios de Laboratorio 2026** (UTU – UdelaR – UTEC).
+
+### Criterios de promediabilidad
+- Concordancia (ej. 5,0 mg en V20): se elige el grupo más grande de valores dentro del límite.
+- σr conocido (HCl/NaOH σr = 0,00030 M; KMnO₄ 5,1 × 10⁻⁵ M; H₂O₂ 0,025 vol): Ir = 2,8·σr; CAI = 1,96·σr/√n.
+- Q de Dixon (α = 0,05) y CAI = t(95 %, n−1)·s/√n.
+- CV máximo (1 %, 5 % o 10 % según el práctico), con mínimo de valores.
+
+### Diagramaciones verificadas a mano
+| Práctico | Caso | Resultado |
+|---|---|---|
+| 2 | Na₂CO₃ para 8 mL de HCl 0,250 M | 0,1060 g |
+| 2 | HCl conc. (37 %, 1,18 g/mL) para 1000 mL 0,250 M | 20,9 mL |
+| 3 | H₂C₂O₄·2H₂O para 8 mL de NaOH 0,1 M | 0,0504 g → conviene alícuota |
+| 4 | ácido cítrico·H₂O puro con 8,00 mL de NaOH 0,1 M | 100 % |
+| 5 | V_T para G1 = 3 mL (0,075 M CO₃²⁻; HCl 0,125 M) | 5,0 mL; G2 = 8 mL |
+| 6 | 0,1000 g Ni, blanco 8 mL, retro 2 mL | C(Mg) = 0,0634 M |
+| 7 | H₂O₂ 10 vol, KMnO₄ 0,02 M, 8 mL | 0,448 mL de muestra |
+| 8 | KIO₃ para 8 mL de tiosulfato 0,05 M; I₂ 1 % p-v | 0,01427 g; 5,08 mL |
+| 9 | Volhard: blanco y toma | 10,00 mL AgNO₃; 5,00 mL KBr |
+| 10 | Ejemplo de la cuaderneta (3,2989 g → 2,7690 g) | 16,1 % humedad |
+| 11 | Cola con 600 ppm para 13 mL de NaOH 0,01 M | 21,23 g |
+| 13 | Rango de Beer (A 0,020–0,700; ε 11 100) | 0,10–3,52 ppm Fe |
+
+### Otras herramientas
+- **Factor Z (V20)**: densidad del agua de Tanaka (2001), empuje del aire y dilatación del vidrio; coincide con la tabla de Harris (1,0020 a 15 °C; 1,0029 a 20 °C; 1,0040 a 25 °C).
+- **Criterios de conformidad** del material volumétrico: s/√n ≤ tol/3 y |V20 − Vnom| + t·s/√n ≤ tol.
+- **Derivadas de la valoración potenciométrica**: tabla V̄, ΔpH/ΔV, V̿, Δ²; el punto final se encuentra en una curva de H₃PO₄ simulada con el motor exacto (±0,15 mL).
+- **4 modelos de calibración** (lineal y cuadrático, con y sin ordenada) con los datos del ejercicio de Cr de la cuaderneta: coeficientes, R² y s de residuos iguales a `numpy.linalg.lstsq` (12 decimales).
+
+---
+
 ## Cómo agregar una prueba
 Abrí `src/chem/__tests__/*.test.ts`, copiá un bloque `it('…', () => { … })`, cambiá los valores y corré `npm test`.

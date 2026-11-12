@@ -152,7 +152,7 @@ export function DataGrid({ value, onChange }: { value: GridData; onChange: (g: G
 
   const cellCls = (s: string, rowIncomplete: boolean) => {
     const bad = s.trim() !== '' && parseNumber(s) == null;
-    return `w-full rounded-md border px-2 py-1.5 font-mono text-base outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/30 dark:bg-slate-950 ${
+    return `w-full rounded-md border px-2 py-1.5 font-mono text-base outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30 dark:bg-slate-950 ${
       bad ? 'border-red-500 bg-red-50 dark:bg-red-950/40' : rowIncomplete && s.trim() === '' ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/40' : 'border-slate-300 bg-white dark:border-slate-700'
     }`;
   };

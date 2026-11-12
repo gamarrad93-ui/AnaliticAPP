@@ -15,7 +15,7 @@ export interface Indicator {
 
 export const INDICATORS: Indicator[] = [
   { id: 'azul-timol-1', name: 'Azul de timol (1er viraje)', low: 1.2, high: 2.8, acidColor: 'rojo', baseColor: 'amarillo', acidHex: '#dc2626', baseHex: '#eab308' },
-  { id: 'naranja-metilo', name: 'Naranja de metilo', low: 3.1, high: 4.4, acidColor: 'rojo', baseColor: 'amarillo-naranja', acidHex: '#dc2626', baseHex: '#f59e0b' },
+  { id: 'naranja-metilo', name: 'Naranja de metilo (heliantina)', low: 3.1, high: 4.4, acidColor: 'rojo', baseColor: 'amarillo-naranja', acidHex: '#dc2626', baseHex: '#f59e0b' },
   { id: 'verde-bromocresol', name: 'Verde de bromocresol', low: 3.8, high: 5.4, acidColor: 'amarillo', baseColor: 'azul', acidHex: '#eab308', baseHex: '#2563eb' },
   { id: 'rojo-metilo', name: 'Rojo de metilo', low: 4.2, high: 6.3, acidColor: 'rojo', baseColor: 'amarillo', acidHex: '#dc2626', baseHex: '#eab308' },
   { id: 'purpura-bromocresol', name: 'Púrpura de bromocresol', low: 5.2, high: 6.8, acidColor: 'amarillo', baseColor: 'púrpura', acidHex: '#eab308', baseHex: '#9333ea' },

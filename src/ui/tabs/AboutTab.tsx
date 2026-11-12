@@ -1,5 +1,4 @@
 /** Pestaña: Acerca de — modelos, supuestos y fuentes. */
-import { AUTHOR, PROFESSOR } from '../../config';
 
 function Sec({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -13,14 +12,21 @@ function Sec({ title, children }: { title: string; children: React.ReactNode }) 
 export default function AboutTab() {
   return (
     <div className="mx-auto max-w-4xl space-y-4">
-      <Sec title="¿Qué es esta app?">
+      <Sec title="Regla de oro">
         <p>
-          Una herramienta para el curso de <strong>Química Analítica I</strong> (Tecnólogo Químico, Uruguay), pensada para proyectar en clase y para que los estudiantes exploren en su celular.
-          La hizo <strong>{AUTHOR}</strong> con ayuda de inteligencia artificial (Claude), y la validó el profesor <strong>{PROFESSOR}</strong>.
+          La IA ayudó a escribir el programa, pero <em>ningún número</em> lo genera una IA al usarla. Todos los resultados salen de código determinístico
+          (mismas entradas → mismo resultado), con pruebas automáticas que lo comparan con valores de libro y con scipy. Cada pestaña tiene un panel <strong>"Ver procedimiento"</strong> con las ecuaciones y los valores intermedios.
+        </p>
+      </Sec>
+
+      <Sec title="Prácticos de laboratorio">
+        <p>
+          La pestaña <strong>Prácticos</strong> sigue la Cuaderneta de Ejercicios de Laboratorio 2026: para cada práctico calcula la diagramación (las tomas para un gasto de ≈ 8 mL en bureta de 10,00 mL),
+          el resultado de cada determinación con la ecuación del práctico y el tratamiento estadístico con el criterio que indica la cuaderneta (intervalo de repetibilidad Ir = 2,8·σr y CAI = 1,96·σr/√n cuando σr es conocido;
+          test Q de Dixon o CV máximo y CAI = t·s/√n en los demás). También verifica especificaciones (USP, Reglamento Bromatológico Nacional).
         </p>
         <p>
-          <strong>Regla de oro:</strong> la IA ayudó a escribir el programa, pero <em>ningún número</em> lo genera una IA al usarla. Todos los resultados salen de código determinístico
-          (mismas entradas → mismo resultado), con pruebas automáticas que lo comparan con valores de libro y con scipy. Cada pestaña tiene un panel <strong>"Ver procedimiento"</strong> con las ecuaciones y los valores intermedios.
+          Los datos precargados son <strong>de ejemplo</strong>: cada estudiante reemplaza con sus masas, gastos corregidos y V20. Diferencia con la cuaderneta a consultar: el 3er pKa del ácido cítrico (cuaderneta 5,40; Harris 6,40).
         </p>
       </Sec>
 

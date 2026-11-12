@@ -86,22 +86,40 @@ function AnalyteInputs({ a, title }: { a: AnalyteState; title: string }) {
   );
 }
 
+/** Parámetros opcionales en la URL (#titulaciones?a=Na2CO3&ca=0,05&va=20&t=HCl&ct=0,25&ind=…&pe=2), usados por "Prácticos". */
+function urlParams() {
+  const q = new URLSearchParams(window.location.hash.split('?')[1] ?? '');
+  const num = (k: string) => (q.get(k) ? q.get(k)!.replace('.', ',') : null);
+  return {
+    a: q.get('a') && getCompound(q.get('a')!) ? q.get('a')! : null,
+    ca: num('ca'),
+    a2: q.get('a2') && getCompound(q.get('a2')!) ? q.get('a2')! : null,
+    ca2: num('ca2'),
+    va: num('va'),
+    t: q.get('t') && TITRANTS.some((x) => x.id === q.get('t')) ? q.get('t')! : null,
+    ct: num('ct'),
+    ind: q.get('ind') && getIndicator(q.get('ind')!) ? q.get('ind')! : null,
+    pe: q.get('pe') ? Number(q.get('pe')) : null,
+  };
+}
+
 export default function TitrationTab() {
   const th = useChartTheme();
-  const a1 = useAnalyte('CH3COOH', '0,1');
-  const a2 = useAnalyte('HCl', '0,05');
-  const [mix, setMix] = useState(false);
-  const Va = useNum('25');
+  const [U] = useState(urlParams);
+  const a1 = useAnalyte(U.a ?? 'CH3COOH', U.ca ?? '0,1');
+  const a2 = useAnalyte(U.a2 ?? 'HCl', U.ca2 ?? '0,05');
+  const [mix, setMix] = useState(!!U.a2);
+  const Va = useNum(U.va ?? '25');
   // ¿Qué fija el usuario? el volumen de analito (se calcula el gasto) o el gasto de bureta (se calcula el analito)
   const [fixMode, setFixMode] = useState<'analito' | 'gasto'>('analito');
   const Vg = useNum('8');
-  const [peRef, setPeRef] = useState(1);
-  const [titrantId, setTitrantId] = useState('NaOH');
-  const Ct = useNum('0,1');
+  const [peRef, setPeRef] = useState(U.pe ?? 1);
+  const [titrantId, setTitrantId] = useState(U.t ?? 'NaOH');
+  const Ct = useNum(U.ct ?? '0,1');
   const [autoV, setAutoV] = useState(true);
   const VmaxIn = useNum('50');
   const [showD1, setShowD1] = useState(false);
-  const [indId, setIndId] = useState('fenolftaleina');
+  const [indId, setIndId] = useState(U.ind ?? 'fenolftaleina');
   const ind = getIndicator(indId)!;
   const pHendIn = useNum(fmtFixed((ind.low + ind.high) / 2, 2));
   const [sliderV, setSliderV] = useState<number | null>(null);
@@ -361,7 +379,7 @@ export default function TitrationTab() {
 
             <section className="card">
               <label className="label" htmlFor="vslider">Volumen agregado: <strong className="font-mono">{fmtFixed(V, 2)} mL</strong> → pH = <strong className="font-mono">{fmtFixed(pHV, 2)}</strong></label>
-              <input id="vslider" type="range" min={0} max={ok.Vmax} step={ok.Vmax / 2000} value={V} onChange={(e) => setSliderV(Number(e.target.value))} className="w-full accent-teal-700" />
+              <input id="vslider" type="range" min={0} max={ok.Vmax} step={ok.Vmax / 2000} value={V} onChange={(e) => setSliderV(Number(e.target.value))} className="w-full accent-brand-700" />
               <div className="mt-2 flex flex-wrap gap-2">
                 {ok.eqInfo.eq.map((e) => <button key={e.index} className="btn" onClick={() => setSliderV(e.V)}>Ir a PE{e.index}</button>)}
                 {ok.eqInfo.half.map((h) => <button key={h.index} className="btn" onClick={() => setSliderV(h.V)}>Ir a ½PE{h.index}</button>)}
@@ -419,7 +437,7 @@ export default function TitrationTab() {
                 <thead><tr><th>Indicador</th><th>Viraje</th><th>Error</th><th>Cambio de color en</th><th>Veredicto</th></tr></thead>
                 <tbody>
                   {ok.indResults.map((r) => (
-                    <tr key={r.indicator.id} className={r.indicator.id === indId ? 'bg-teal-50 dark:bg-teal-950/40' : ''}>
+                    <tr key={r.indicator.id} className={r.indicator.id === indId ? 'bg-brand-50 dark:bg-brand-950/40' : ''}>
                       <td>
                         <button className="text-left underline-offset-2 hover:underline" onClick={() => onIndicator(r.indicator.id)}>
                           <span className="mr-1 inline-block h-3 w-3 rounded-sm align-middle" style={{ background: r.indicator.acidHex }} />

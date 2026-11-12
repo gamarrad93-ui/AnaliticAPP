@@ -14,9 +14,9 @@ export interface Step {
 export function Procedure({ steps, title = 'Ver procedimiento', defaultOpen = false }: { steps: Step[]; title?: string; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-teal-200 bg-teal-50/60 dark:border-teal-900 dark:bg-teal-950/30">
+    <div className="rounded-xl border border-brand-200 bg-brand-50/60 dark:border-brand-900 dark:bg-brand-950/30">
       <button
-        className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold text-teal-900 dark:text-teal-200"
+        className="flex w-full items-center justify-between px-4 py-3 text-left font-semibold text-brand-900 dark:text-brand-200"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
       >

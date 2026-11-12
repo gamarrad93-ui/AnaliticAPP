@@ -84,7 +84,7 @@ export default function SpeciesTab() {
           {system && (
             <section className="card space-y-2">
               <label className="label" htmlFor="phsel">pH elegido: <strong className="font-mono">{fmtFixed(pHsel, 2)}</strong></label>
-              <input id="phsel" type="range" min={0} max={14} step={0.01} value={pHsel} onChange={(e) => setPHsel(Number(e.target.value))} className="w-full accent-teal-700" />
+              <input id="phsel" type="range" min={0} max={14} step={0.01} value={pHsel} onChange={(e) => setPHsel(Number(e.target.value))} className="w-full accent-brand-700" />
               <table className="table-basic">
                 <thead><tr><th>Especie</th><th>α</th><th>%</th></tr></thead>
                 <tbody>

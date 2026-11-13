@@ -150,7 +150,7 @@ export function ReplicateBlock(props: {
           },
         }))}
       />
-      <p className="text-xs text-slate-600 dark:text-slate-400">✓ = valor promediable según el criterio de la cuaderneta. Los valores tachados no se promedian.</p>
+      <p className="text-xs text-slate-600 dark:text-slate-400">✓ = valor promediable según el criterio del práctico. Los valores tachados no se promedian.</p>
       {props.results.map((r, k) => (
         <StatsBlock key={r.key} def={r} result={evals[k]?.res ?? null} />
       ))}

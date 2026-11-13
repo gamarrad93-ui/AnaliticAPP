@@ -71,7 +71,7 @@ export default function PracticesTab() {
             </div>
           ))}
         </div>
-        <p className="hidden text-xs text-slate-500 lg:block">Basado en la Cuaderneta de Ejercicios de Laboratorio 2026 (UTU – UdelaR – UTEC). Gasto de referencia: 8 mL en bureta de 10,00 mL.</p>
+        <p className="hidden text-xs text-slate-500 lg:block">Gasto de referencia: 8 mL en bureta de 10,00 mL.</p>
       </nav>
       <div className="min-w-0">
         <cur.C key={n} />

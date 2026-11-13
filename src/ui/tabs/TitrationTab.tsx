@@ -2,7 +2,7 @@
  * Pestaña: Titulaciones ácido-base.
  * Todo el cálculo viene de src/chem (motor exacto); acá sólo se arma la interfaz.
  */
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useId, useMemo, useState } from 'react';
 import {
   CartesianGrid, Line, LineChart, ReferenceArea, ReferenceDot, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
@@ -20,6 +20,7 @@ import { Procedure, type Step } from '../components/Procedure';
 import { checkNum, useNum } from '../hooks';
 import { useChartTheme } from '../display';
 import { exportCsv } from '../components/exporters';
+import { indicatorGradientDefs, IndicatorLegend } from '../components/indicatorGradient';
 
 const SHARP_LABEL = { nitido: 'Nítido', 'poco-nitido': 'Poco nítido', 'no-detectable': 'No detectable' } as const;
 const SHARP_CLS = {
@@ -105,6 +106,7 @@ function urlParams() {
 
 export default function TitrationTab() {
   const th = useChartTheme();
+  const gradId = 'ind-' + useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const [U] = useState(urlParams);
   const a1 = useAnalyte(U.a ?? 'CH3COOH', U.ca ?? '0,1');
   const a2 = useAnalyte(U.a2 ?? 'HCl', U.ca2 ?? '0,05');
@@ -324,6 +326,9 @@ export default function TitrationTab() {
             >
               <ResponsiveContainer width="100%" height={th.height}>
                 <LineChart data={ok.curve} margin={{ top: 24, right: 20, bottom: 30, left: 10 }}>
+                  {/* fondo: color del indicador según el pH (degradé SVG alineado al eje 0–14) */}
+                  {indicatorGradientDefs({ id: gradId, ind, opacity: th.dark ? 0.32 : 0.38, yMin: 0, yMax: 14 })}
+                  <ReferenceArea y1={0} y2={14} fill={`url(#${gradId})`} fillOpacity={1} stroke="none" ifOverflow="hidden" />
                   <CartesianGrid stroke={th.grid} />
                   <XAxis
                     dataKey="V" type="number" domain={[0, ok.Vmax]} tick={{ fontSize: th.fontSize, fill: th.axis }} stroke={th.axis}
@@ -335,9 +340,6 @@ export default function TitrationTab() {
                     allowDataOverflow
                     label={{ value: 'pH', angle: -90, position: 'insideLeft', fontSize: th.fontSize, fill: th.axis }}
                   />
-                  {/* banda del indicador: color ácido abajo, color básico arriba */}
-                  <ReferenceArea y1={ind.low} y2={(ind.low + ind.high) / 2} fill={ind.acidHex} fillOpacity={0.28} ifOverflow="hidden" />
-                  <ReferenceArea y1={(ind.low + ind.high) / 2} y2={ind.high} fill={ind.baseHex} fillOpacity={0.28} ifOverflow="hidden" />
                   {ok.eqInfo.eq.map((e) => (
                     <ReferenceLine key={`eq${e.index}`} x={e.V} stroke={th.accent} strokeDasharray="6 4" strokeWidth={1.5}
                       label={{ value: `PE${e.index}`, position: 'top', fontSize: th.fontSize - 2, fill: th.accent }} />
@@ -354,8 +356,9 @@ export default function TitrationTab() {
                   <ReferenceDot x={V} y={pHV} r={th.projector ? 9 : 6} fill={th.accent} stroke={th.bg} strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
+              <IndicatorLegend ind={ind} fmt={(x) => fmtFixed(x, 1)} />
               <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                Líneas punteadas: puntos de equivalencia (PE). Círculos huecos: semiequivalencias. Banda de color: viraje de {ind.name.toLowerCase()}.
+                Fondo: color que toma {ind.name.toLowerCase()} a cada pH (degradé dentro del intervalo de viraje). Líneas punteadas: puntos de equivalencia (PE). Círculos huecos: semiequivalencias.
               </p>
             </ChartCard>
 

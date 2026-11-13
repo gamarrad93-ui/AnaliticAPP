@@ -15,18 +15,18 @@ export default function AboutTab() {
       <Sec title="Regla de oro">
         <p>
           La IA ayudó a escribir el programa, pero <em>ningún número</em> lo genera una IA al usarla. Todos los resultados salen de código determinístico
-          (mismas entradas → mismo resultado), con pruebas automáticas que lo comparan con valores de libro y con scipy. Cada pestaña tiene un panel <strong>"Ver procedimiento"</strong> con las ecuaciones y los valores intermedios.
+          (mismas entradas → mismo resultado), con pruebas automáticas que verifican los resultados. Cada pestaña tiene un panel <strong>"Ver procedimiento"</strong> con las ecuaciones y los valores intermedios.
         </p>
       </Sec>
 
       <Sec title="Prácticos de laboratorio">
         <p>
-          La pestaña <strong>Prácticos</strong> sigue la Cuaderneta de Ejercicios de Laboratorio 2026: para cada práctico calcula la diagramación (las tomas para un gasto de ≈ 8 mL en bureta de 10,00 mL),
-          el resultado de cada determinación con la ecuación del práctico y el tratamiento estadístico con el criterio que indica la cuaderneta (intervalo de repetibilidad Ir = 2,8·σr y CAI = 1,96·σr/√n cuando σr es conocido;
+          La pestaña <strong>Prácticos</strong> cubre los 13 prácticos de laboratorio: para cada uno calcula la diagramación (las tomas para un gasto de ≈ 8 mL en bureta de 10,00 mL),
+          el resultado de cada determinación con la ecuación del práctico y el tratamiento estadístico con el criterio de cada práctico (intervalo de repetibilidad Ir = 2,8·σr y CAI = 1,96·σr/√n cuando σr es conocido;
           test Q de Dixon o CV máximo y CAI = t·s/√n en los demás). También verifica especificaciones (USP, Reglamento Bromatológico Nacional).
         </p>
         <p>
-          Los datos precargados son <strong>de ejemplo</strong>: cada estudiante reemplaza con sus masas, gastos corregidos y V20. Diferencia con la cuaderneta a consultar: el 3er pKa del ácido cítrico (cuaderneta 5,40; Harris 6,40).
+          Los datos precargados son <strong>de ejemplo</strong>: cada estudiante reemplaza con sus masas, gastos corregidos y V20.
         </p>
       </Sec>
 
@@ -46,7 +46,7 @@ export default function AboutTab() {
         </p>
         <p>
           <strong>Supuestos:</strong> 25 °C; Kw = 1,0 × 10⁻¹⁴; comportamiento ideal (actividad = concentración, sin corrección por fuerza iónica); volúmenes aditivos;
-          los pKa de la biblioteca son termodinámicos (Harris; Skoog). En soluciones reales el pH medido puede diferir algunas centésimas a décimas.
+          los pKa de la biblioteca son termodinámicos. En soluciones reales el pH medido puede diferir algunas centésimas a décimas.
         </p>
       </Sec>
 
@@ -54,7 +54,7 @@ export default function AboutTab() {
         <ul className="list-disc space-y-1 pl-5">
           <li>Los puntos de equivalencia se calculan por <strong>estequiometría</strong>: el titulante reacciona primero con el protón más ácido (o la base más fuerte).</li>
           <li>Se informa si cada punto es detectable mediante el <strong>salto de pH entre el 98 % y el 102 %</strong> del tramo: ≥ 1,5 nítido; 0,5–1,5 poco nítido; &lt; 0,5 no detectable con indicador visual.</li>
-          <li>Indicadores: intervalos de viraje de Skoog et al. El pH de punto final por defecto es el centro del intervalo (editable).</li>
+          <li>Indicadores: intervalos de viraje tabulados. El pH de punto final por defecto es el centro del intervalo (editable).</li>
           <li>Error de titulación = (V<sub>final</sub> − V<sub>eq</sub>)/V<sub>eq</sub> × 100. |error| ≤ 0,1 %: excelente; ≤ 0,5 %: aceptable.</li>
         </ul>
       </Sec>
@@ -68,10 +68,10 @@ export default function AboutTab() {
 
       <Sec title="Calibración y estadística">
         <ul className="list-disc space-y-1 pl-5">
-          <li>Regresión por <strong>mínimos cuadrados ordinarios</strong> (supone error sólo en y, varianza constante). Fórmulas de Miller &amp; Miller, cap. 5.</li>
+          <li>Regresión por <strong>mínimos cuadrados ordinarios</strong> (supone error sólo en y, varianza constante).</li>
           <li>Adición estándar por extrapolación a señal cero, con intervalo de confianza usando t con n − 2 grados de libertad.</li>
-          <li>Valores críticos de t y F calculados con la función beta incompleta; G de Grubbs a partir de t (ISO 5725-2). Tabla Q de Dixon: Rorabacher, Anal. Chem. 1991, 63, 139.</li>
-          <li>Propagación de errores de primer orden (GUM) con derivadas numéricas: sirve para cualquier fórmula que se escriba.</li>
+          <li>Valores críticos de t y F calculados con la función beta incompleta; G de Grubbs a partir de t. Tabla Q de Dixon tabulada para 3 ≤ n ≤ 10.</li>
+          <li>Propagación de errores de primer orden con derivadas numéricas: sirve para cualquier fórmula que se escriba.</li>
         </ul>
       </Sec>
 
@@ -85,7 +85,7 @@ export default function AboutTab() {
 
       <Sec title="Complejometría y precipitación">
         <p>
-          EDTA: α(Y⁴⁻) con los 6 pKa del H₆Y²⁺ (Harris, μ = 0,1 M); constante condicional K″ = Kf·α(Y⁴⁻)·α(M), donde α(M) incluye el NH₃ auxiliar con sus constantes acumuladas β.
+          EDTA: α(Y⁴⁻) con los 6 pKa del H₆Y²⁺ (μ = 0,1 M); constante condicional K″ = Kf·α(Y⁴⁻)·α(M), donde α(M) incluye el NH₃ auxiliar con sus constantes acumuladas β.
           En cada punto se resuelve la cuadrática exacta de los balances de masa (sin dividir en "antes / en / después" de la equivalencia). Se supone pH constante (buffer) y estequiometría 1:1.
         </p>
         <p>
@@ -97,19 +97,8 @@ export default function AboutTab() {
         <p>
           Solubilidad molar a partir de Ksp para sales M<sub>a</sub>X<sub>b</sub>. Ion común: se resuelve Ksp = (C<sub>M</sub> + a·s)<sup>a</sup>(C<sub>X</sub> + b·s)<sup>b</sup> exactamente.
           Efecto del pH: K′sp = Ksp/α<sub>X</sub><sup>b</sup> (anión básico) o [OH⁻] directo para hidróxidos. No se incluyen la hidrólisis del catión, los complejos hidroxo ni la fuerza iónica: es el modelo del curso.
-          Los Ksp son valores típicos de tabla (pueden diferir entre libros) y se pueden editar.
+          Los Ksp son valores típicos a 25 °C y se pueden editar.
         </p>
-      </Sec>
-
-      <Sec title="Bibliografía">
-        <ul className="list-disc space-y-1 pl-5">
-          <li>D. C. Harris, <em>Quantitative Chemical Analysis</em> (Análisis Químico Cuantitativo), W. H. Freeman.</li>
-          <li>D. A. Skoog, D. M. West, F. J. Holler, S. R. Crouch, <em>Fundamentos de Química Analítica</em>, Cengage.</li>
-          <li>J. N. Miller, J. C. Miller, <em>Estadística y Quimiometría para Química Analítica</em>, Pearson.</li>
-          <li>D. B. Rorabacher, Anal. Chem. 63 (1991) 139–146 (Q de Dixon).</li>
-          <li>ICH Q2(R1), <em>Validation of Analytical Procedures</em>.</li>
-          <li>NIST/SEMATECH e-Handbook of Statistical Methods (test de Grubbs).</li>
-        </ul>
       </Sec>
 
       <Sec title="Código abierto">

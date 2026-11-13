@@ -44,7 +44,7 @@ export interface RedoxPreset {
 }
 
 export const REDOX_PRESETS: RedoxPreset[] = [
-  { id: 'fe-ce', name: 'Fe²⁺ con Ce⁴⁺ (H₂SO₄ 1 M)', analyte: 'Fe', analyteForm: 'red', titrant: 'Ce', Ca: 0.05, Va: 50, Ct: 0.1, pH: 0, note: 'Fe²⁺ + Ce⁴⁺ → Fe³⁺ + Ce³⁺ (1:1). Ejemplo clásico de Skoog.' },
+  { id: 'fe-ce', name: 'Fe²⁺ con Ce⁴⁺ (H₂SO₄ 1 M)', analyte: 'Fe', analyteForm: 'red', titrant: 'Ce', Ca: 0.05, Va: 50, Ct: 0.1, pH: 0, note: 'Fe²⁺ + Ce⁴⁺ → Fe³⁺ + Ce³⁺ (1:1).' },
   { id: 'fe-mno4', name: 'Fe²⁺ con MnO₄⁻ (permanganimetría)', analyte: 'Fe', analyteForm: 'red', titrant: 'MnO4', Ca: 0.1, Va: 25, Ct: 0.02, pH: 0, note: '5Fe²⁺ + MnO₄⁻ + 8H⁺ → 5Fe³⁺ + Mn²⁺ + 4H₂O. El MnO₄⁻ es autoindicador (rosa persistente).' },
   { id: 'fe-cr2o7', name: 'Fe²⁺ con Cr₂O₇²⁻ (dicromatometría)', analyte: 'Fe', analyteForm: 'red', titrant: 'Cr2O7', Ca: 0.1, Va: 25, Ct: 0.01667, pH: 0, note: '6Fe²⁺ + Cr₂O₇²⁻ + 14H⁺ → 6Fe³⁺ + 2Cr³⁺ + 7H₂O. Indicador: difenilaminosulfonato.' },
   { id: 'i3-s2o3', name: 'I₂ (I₃⁻) con S₂O₃²⁻ (yodometría)', analyte: 'I3', analyteForm: 'ox', titrant: 'S4O6', Ca: 0.025, Va: 25, Ct: 0.1, pH: 7, logI: -1, note: 'I₃⁻ + 2S₂O₃²⁻ → 3I⁻ + S₄O₆²⁻. Indicador: almidón (se agrega cerca del punto final).' },

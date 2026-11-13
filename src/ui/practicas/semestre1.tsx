@@ -81,7 +81,7 @@ export function P1() {
         formula={[
           {
             title: 'Volumen de verificación a 20 °C',
-            text: 'Z incluye la densidad del agua a la temperatura de trabajo (Tanaka 2001), el empuje del aire (0,0012 g/mL; pesas de 8,0 g/mL) y la dilatación del vidrio borosilicato (γ = 1,0 × 10⁻⁵ °C⁻¹).',
+            text: 'Z incluye la densidad del agua a la temperatura de trabajo, el empuje del aire (0,0012 g/mL; pesas de 8,0 g/mL) y la dilatación del vidrio borosilicato (γ = 1,0 × 10⁻⁵ °C⁻¹).',
             tex: ['V_{20} = m_{agua,aire,T}\\cdot Z(T)', 'Z = \\frac{1}{\\rho_{agua}(T)-\\rho_{aire}}\\left(1-\\frac{\\rho_{aire}}{\\rho_{pesas}}\\right)\\left[1-\\gamma(T-20)\\right]', `Z(20\\,°C) = ${texNum(zFactor(20), 5)};\\ Z(25\\,°C) = ${texNum(zFactor(25), 5)}\\ \\mathrm{mL/g}`],
           },
           { title: 'Criterios de conformidad', tex: ['\\frac{s}{\\sqrt n}\\le \\frac{\\text{tolerancia}}{3}', '|\\bar V_{20}-V_{nom}| + t_{95\\%}\\frac{s}{\\sqrt n}\\le \\text{tolerancia}'] },
@@ -96,7 +96,7 @@ export function P1() {
           <SelectField label="Pipeta (volumen nominal y tolerancia)" value={pip} onChange={setPip} options={TOLERANCES.filter((t) => t.id.startsWith('pip')).map((t) => ({ value: t.id, label: `${t.label} (±${fmtFixed(t.tol, 3)} mL)` }))} />
           <SelectField label="Bureta (tramo y tolerancia)" value={bur} onChange={setBur} options={TOLERANCES.filter((t) => t.id.startsWith('bur')).map((t) => ({ value: t.id, label: `${t.label} (±${fmtFixed(t.tol, 3)} mL)` }))} />
         </div>
-        <p className="text-xs text-slate-600 dark:text-slate-400">Tolerancias clase A de ISO 648 (pipetas) e ISO 385 (buretas); verificá las de tu material en el certificado del fabricante.</p>
+        <p className="text-xs text-slate-600 dark:text-slate-400">Tolerancias típicas de material clase A; verificá las de tu material en el certificado del fabricante.</p>
       </PracticeHeader>
       {block('pipeta')}
       {block('bureta')}
@@ -247,7 +247,7 @@ export function P4() {
     <div className="space-y-4">
       <PracticeHeader n={4} title="Determinación del % m-m de una muestra de ácido cítrico monohidrato" objetivos={['Determinar el % m-m de C₆H₈O₇·H₂O con NaOH 0,1 M valorado.', 'Comparar con el Assay declarado y evaluar la veracidad (sesgo).']} reacciones={['H₃Cit + 3 NaOH → Na₃Cit + 3 H₂O']}>
         <Alert kind="info">
-          La cuaderneta da pK = 3,08; 4,74; 5,40. La app usa los de Harris ({sys.pKa.map((p) => fmtFixed(p, 2)).join('; ')}); el tercero difiere bastante (5,40 vs 6,40): conviene consultarlo con el docente. Con cualquiera de los dos los tres protones se valoran juntos y se detecta un solo punto final.
+          pKa usados por la app: {sys.pKa.map((p) => fmtFixed(p, 2)).join('; ')}. El tercero varía bastante entre tablas (5,40 a 6,40): conviene confirmarlo con el docente. Con cualquiera de los dos los tres protones se valoran juntos y se detecta un solo punto final.
         </Alert>
       </PracticeHeader>
       <Diagram

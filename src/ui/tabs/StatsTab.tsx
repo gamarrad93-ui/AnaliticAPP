@@ -175,8 +175,8 @@ function Outliers() {
         </section>
         <Procedure
           steps={[
-            { title: 'Q de Dixon (r₁₀)', tex: ['Q = \\frac{|x_{\\text{sospechoso}} - x_{\\text{vecino}}|}{x_{\\max} - x_{\\min}}', ...(q ? [`Q = \\frac{${texNum(q.gap, 4)}}{${texNum(q.range, 4)}} = ${texNum(q.Q, 4)}\\quad\\text{vs}\\quad Q_{crit} = ${texNum(q.Qcrit, 3)}`] : [])], text: 'Valores críticos: Rorabacher, Anal. Chem. 1991, 63, 139 (válido para 3 ≤ n ≤ 10).' },
-            { title: 'Grubbs', tex: ['G = \\frac{|x_{\\text{sospechoso}} - \\bar x|}{s},\\qquad G_{crit} = \\frac{n-1}{\\sqrt n}\\sqrt{\\frac{t^2_{\\alpha/(2n),\\,n-2}}{n-2+t^2_{\\alpha/(2n),\\,n-2}}}', ...(g ? [`G = ${texNum(g.G, 4)}\\quad\\text{vs}\\quad G_{crit} = ${texNum(g.Gcrit, 4)}`] : [])], text: 'G crítico calculado exactamente a partir de la distribución t (ISO 5725-2, NIST e-Handbook 1.3.5.17); coincide con las tablas ASTM E178.' },
+            { title: 'Q de Dixon (r₁₀)', tex: ['Q = \\frac{|x_{\\text{sospechoso}} - x_{\\text{vecino}}|}{x_{\\max} - x_{\\min}}', ...(q ? [`Q = \\frac{${texNum(q.gap, 4)}}{${texNum(q.range, 4)}} = ${texNum(q.Q, 4)}\\quad\\text{vs}\\quad Q_{crit} = ${texNum(q.Qcrit, 3)}`] : [])], text: 'Válido para 3 ≤ n ≤ 10.' },
+            { title: 'Grubbs', tex: ['G = \\frac{|x_{\\text{sospechoso}} - \\bar x|}{s},\\qquad G_{crit} = \\frac{n-1}{\\sqrt n}\\sqrt{\\frac{t^2_{\\alpha/(2n),\\,n-2}}{n-2+t^2_{\\alpha/(2n),\\,n-2}}}', ...(g ? [`G = ${texNum(g.G, 4)}\\quad\\text{vs}\\quad G_{crit} = ${texNum(g.Gcrit, 4)}`] : [])], text: 'G crítico calculado exactamente a partir de la distribución t.' },
           ]}
         />
       </div>
@@ -460,7 +460,7 @@ function Tables() {
   return (
     <div className="space-y-4">
       <Alert kind="info">
-        Los valores de t, F y G se <strong>calculan</strong> con funciones exactas (función beta incompleta) y se verificaron contra scipy.stats y las tablas publicadas (ver TESTS.md). La tabla Q es la de Rorabacher (1991), verificada además por simulación Monte Carlo.
+        Los valores de t, F y G se <strong>calculan</strong> con funciones exactas (función beta incompleta). La tabla Q se verificó además por simulación Monte Carlo.
       </Alert>
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="card overflow-x-auto">

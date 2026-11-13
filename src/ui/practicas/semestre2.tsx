@@ -317,7 +317,7 @@ export function P11() {
           </div>
         )}
         <details className="rounded-lg border border-slate-200 p-2 text-sm dark:border-slate-800">
-          <summary className="cursor-pointer font-semibold">Tabla de derivadas (como en la cuaderneta)</summary>
+          <summary className="cursor-pointer font-semibold">Tabla de derivadas</summary>
           <div className="mt-2 max-h-96 overflow-auto">
             <table className="table-basic">
               <thead><tr><th>G (mL)</th><th>pH</th><th>V̄</th><th>ΔpH/ΔV</th><th>V̿</th><th>Δ(ΔpH/ΔV)/ΔV̄</th></tr></thead>
@@ -349,7 +349,7 @@ export function P11() {
           steps={[
             { title: 'Derivadas', tex: ['\\bar V_i = \\frac{V_i + V_{i-1}}{2};\\quad D_1 = \\frac{\\Delta pH}{\\Delta V}', '\\bar{\\bar V}_i = \\frac{\\bar V_i + \\bar V_{i-1}}{2};\\quad D_2 = \\frac{\\Delta D_1}{\\Delta \\bar V}', '\\text{Punto final: } D_2 = 0 \\text{ (interpolación lineal entre el último } D_2>0 \\text{ y el primero } D_2<0)'] },
             { title: 'Concentración', tex: '\\mathrm{ppm\\ (mg/kg)} = \\frac{C_{NaOH}\\cdot G\\,(\\mathrm{mL})\\cdot MM_{H_3PO_4}\\cdot 1000}{m_{muestra}\\,(\\mathrm g)}' },
-            { title: 'Incertidumbre (tabla de la cuaderneta: u_G = 0,1 mL; u_MM = 0,00042 g/mol; u_m = 0,0002 g)', tex: 'u = c\\sqrt{\\left(\\frac{u_C}{C}\\right)^2 + \\left(\\frac{u_G}{G}\\right)^2 + \\left(\\frac{u_{MM}}{MM}\\right)^2 + \\left(\\frac{u_m}{m}\\right)^2}' },
+            { title: 'Incertidumbre (u_G = 0,1 mL; u_MM = 0,00042 g/mol; u_m = 0,0002 g)', tex: 'u = c\\sqrt{\\left(\\frac{u_C}{C}\\right)^2 + \\left(\\frac{u_G}{G}\\right)^2 + \\left(\\frac{u_{MM}}{MM}\\right)^2 + \\left(\\frac{u_m}{m}\\right)^2}' },
           ]}
         />
       </section>

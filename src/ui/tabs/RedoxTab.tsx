@@ -158,7 +158,7 @@ export default function RedoxTab() {
             <section className="card grid grid-cols-2 gap-2 md:grid-cols-4">
               <Stat label="V de equivalencia" value={`${fmtFixed(res.Veq, 3)} mL`} />
               <Stat label={`E en la equivalencia (exacto)`} value={`${fmtFixed(res.Eeq - ref.E, 3)} V`} sub={`vs ${ref.id}`} />
-              {textbook != null && <Stat label="Fórmula de libro" value={`${fmtFixed(textbook - ref.E, 3)} V`} sub="(n₁E₁ + n₂E₂)/(n₁+n₂)" />}
+              {textbook != null && <Stat label="Fórmula clásica" value={`${fmtFixed(textbook - ref.E, 3)} V`} sub="(n₁E₁ + n₂E₂)/(n₁+n₂)" />}
               {selInd && <Stat label={`Error con ${ind.name.split(' (')[0].toLowerCase()}`} value={selInd.err == null ? '—' : `${selInd.err >= 0 ? '+' : ''}${fmtSig(selInd.err, 2)} %`} sub={<span className={`chip ${VERDICT_CLS[selInd.verdict]}`}>{VERDICT_LABEL[selInd.verdict]}</span>} />}
             </section>
 
@@ -179,7 +179,7 @@ export default function RedoxTab() {
                 </tbody>
               </table>
               <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">
-                Punto final = volumen en que E alcanza el E° del indicador. Los E° de indicadores dependen del medio (Skoog). Otros indicadores: el MnO₄⁻ es autoindicador; en yodometría se usa almidón (complejo azul con I₃⁻), que no depende del potencial.
+                Punto final = volumen en que E alcanza el E° del indicador. Los E° de indicadores dependen del medio. Otros indicadores: el MnO₄⁻ es autoindicador; en yodometría se usa almidón (complejo azul con I₃⁻), que no depende del potencial.
               </p>
             </section>
 
@@ -220,6 +220,6 @@ function redoxSteps(t: RedoxTitration, V: number, E: number, Veq: number) {
       ],
     },
     { title: 'Volumen de equivalencia', tex: `n_A\\,C_A\\,V_A = n_T\\,C_T\\,V_{eq} \\Rightarrow V_{eq} = ${texNum(Veq, 5)}\\ \\mathrm{mL}` },
-    { title: 'Potencial de equivalencia (fórmula de libro, cuplas con p = 1)', tex: 'E_{eq} = \\frac{n_A E^{\\circ\\prime}_A + n_T E^{\\circ\\prime}_T}{n_A + n_T} - \\frac{0{,}05916\\,(m_A+m_T)}{n_A+n_T}\\,\\mathrm{pH}' },
+    { title: 'Potencial de equivalencia (fórmula clásica, cuplas con p = 1)', tex: 'E_{eq} = \\frac{n_A E^{\\circ\\prime}_A + n_T E^{\\circ\\prime}_T}{n_A + n_T} - \\frac{0{,}05916\\,(m_A+m_T)}{n_A+n_T}\\,\\mathrm{pH}' },
   ];
 }

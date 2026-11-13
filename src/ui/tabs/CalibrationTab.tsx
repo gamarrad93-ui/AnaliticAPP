@@ -119,7 +119,7 @@ export default function CalibrationTab() {
             {table.incomplete.length > 0 && <Alert kind="warn">Fila(s) {table.incomplete.join(', ')}: falta completar x o y (se ignora{table.incomplete.length > 1 ? 'n' : ''}).</Alert>}
             <div className="flex flex-wrap gap-2">
               <button className="btn" onClick={() => setGrid(gridFromText(mode === 'cal' ? EXAMPLE_CAL : EXAMPLE_SA))}>Cargar ejemplo</button>
-              {mode === 'cal' && <button className="btn" onClick={() => setGrid(gridFromText(EXAMPLE_CR))}>Ejercicio de Cr (cuaderneta)</button>}
+              {mode === 'cal' && <button className="btn" onClick={() => setGrid(gridFromText(EXAMPLE_CR))}>Ejemplo: Cr por absorción atómica</button>}
               <button className="btn" onClick={() => setGrid(emptyGrid())}>Vaciar tabla</button>
             </div>
             {mode === 'sa' && <NumField label="Unidad de concentración (opcional)" value={xUnit} onChange={setXUnit} placeholder={unit || 'mg/L'} />}
@@ -201,7 +201,7 @@ export default function CalibrationTab() {
                       ))}
                     </tbody>
                   </table>
-                  <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">Como pide la cuaderneta: elegir el modelo por inspección visual, R² y residuos. En los modelos sin ordenada el R² se calcula sin centrar (igual que Excel), así que no se compara directamente con los otros. El resto de esta pestaña usa el modelo lineal con ordenada.</p>
+                  <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">Elegir el modelo por inspección visual, R² y residuos. En los modelos sin ordenada el R² se calcula sin centrar (igual que Excel), así que no se compara directamente con los otros. El resto de esta pestaña usa el modelo lineal con ordenada.</p>
                 </section>
               )}
 
@@ -275,6 +275,5 @@ function buildSteps(reg: Regression, sa: ReturnType<typeof standardAddition> | n
       ],
     });
   }
-  steps.push({ text: 'Fórmulas según Miller & Miller, "Estadística y Quimiometría para Química Analítica", cap. 5.' });
   return steps;
 }

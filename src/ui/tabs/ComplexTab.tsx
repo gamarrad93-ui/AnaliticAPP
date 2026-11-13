@@ -70,7 +70,7 @@ function Edta() {
         <section className="card space-y-3">
           <h2 className="card-title">Metal y EDTA</h2>
           <SelectField label="Metal" value={metalId} onChange={onMetal} options={METALS.map((m) => ({ value: m.id, label: `${m.name} (log Kf = ${fmtFixed(m.logKf, 2)})` }))} />
-          <NumField label="log Kf (editable)" value={logKf.raw} onChange={logKf.setRaw} error={errs.K} hint="Harris, 25 °C, μ = 0,1 M." />
+          <NumField label="log Kf (editable)" value={logKf.raw} onChange={logKf.setRaw} error={errs.K} hint="25 °C, μ = 0,1 M." />
           <NumField label="pH (regulado)" value={pH.raw} onChange={pH.setRaw} error={errs.pH} />
           <NumField label="Concentración del metal" value={CM.raw} onChange={CM.setRaw} unit="mol/L" error={errs.CM} />
           <NumField label="Volumen de muestra" value={VM.raw} onChange={VM.setRaw} unit="mL" error={errs.VM} />

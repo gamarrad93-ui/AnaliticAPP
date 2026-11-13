@@ -64,7 +64,7 @@ export default function SolubilityTab() {
     <div className="space-y-4">
       <section className="card grid gap-3 md:grid-cols-3">
         <SelectField label="Sal poco soluble" value={saltId} onChange={onSalt} options={SALTS.map((s) => ({ value: s.id, label: `${s.formula} (Ksp = ${fmtSig(s.Ksp, 2)})` }))} />
-        <NumField label="Ksp (editable)" value={Ksp.raw} onChange={Ksp.setRaw} error={e.K} hint="Valores típicos de tabla (25 °C). Pueden variar entre libros." />
+        <NumField label="Ksp (editable)" value={Ksp.raw} onChange={Ksp.setRaw} error={e.K} hint="Valores típicos a 25 °C." />
         {s0 != null && <Stat label="Solubilidad en agua pura" value={`${fmtSig(s0, 3)} M`} sub={toGL(s0)} />}
       </section>
 

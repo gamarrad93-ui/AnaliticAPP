@@ -62,16 +62,52 @@ export interface RedoxIndicator {
   medium: string;
 }
 
+/**
+ * Indicadores redox generales: E°′ de transición (V vs ENH) en el medio indicado y colores de las formas
+ * oxidada y reducida. Valores verificados en tablas de química analítica (ver TESTS.md).
+ * Intervalo de viraje: E°′ ± 0,0592/n V.
+ */
 export const REDOX_INDICATORS: RedoxIndicator[] = [
-  { id: 'nitroferroina', name: 'Nitroferroína (5-nitro-1,10-fenantrolina Fe(II))', E0: 1.25, n: 1, oxColor: 'celeste pálido', redColor: 'rojo-violeta', oxHex: '#93c5fd', redHex: '#be185d', medium: 'H₂SO₄ 1 M' },
-  { id: 'ferroina', name: 'Ferroína (1,10-fenantrolina Fe(II))', E0: 1.11, n: 1, oxColor: 'celeste pálido', redColor: 'rojo', oxHex: '#93c5fd', redHex: '#dc2626', medium: 'H₂SO₄ 1 M' },
-  { id: 'dimetilferroina', name: '5,6-Dimetilferroína', E0: 0.97, n: 1, oxColor: 'celeste pálido', redColor: 'rojo', oxHex: '#93c5fd', redHex: '#dc2626', medium: 'H₂SO₄ 1 M' },
-  { id: 'bipiridina', name: '2,2′-Bipiridina Fe(II)', E0: 0.97, n: 1, oxColor: 'incoloro', redColor: 'rojo', oxHex: '#e5e7eb', redHex: '#dc2626', medium: '' },
+  { id: 'nitroferroina', name: 'Nitroferroína (5-nitro-1,10-fenantrolina Fe(II))', E0: 1.25, n: 1, oxColor: 'celeste pálido', redColor: 'rojo-violeta', oxHex: '#7dd3fc', redHex: '#be185d', medium: 'H₂SO₄ 1 M' },
+  { id: 'ferroina', name: 'Ferroína (1,10-fenantrolina Fe(II))', E0: 1.11, n: 1, oxColor: 'celeste pálido', redColor: 'rojo', oxHex: '#7dd3fc', redHex: '#dc2626', medium: 'H₂SO₄ 1 M' },
+  { id: 'dimetilferroina', name: '5,6-Dimetilferroína', E0: 0.97, n: 1, oxColor: 'celeste pálido', redColor: 'rojo', oxHex: '#7dd3fc', redHex: '#dc2626', medium: 'H₂SO₄ 1 M' },
+  { id: 'bipiridina', name: '2,2′-Bipiridina Fe(II)', E0: 0.97, n: 1, oxColor: 'celeste pálido', redColor: 'rojo', oxHex: '#7dd3fc', redHex: '#dc2626', medium: 'ácido diluido' },
   { id: 'dfas', name: 'Ácido difenilaminosulfónico', E0: 0.85, n: 2, oxColor: 'rojo-violeta', redColor: 'incoloro', oxHex: '#9333ea', redHex: '#e5e7eb', medium: 'ácido diluido' },
-  { id: 'difenilamina', name: 'Difenilamina', E0: 0.76, n: 2, oxColor: 'violeta', redColor: 'incoloro', oxHex: '#7c3aed', redHex: '#e5e7eb', medium: 'H₂SO₄ 1 M' },
-  { id: 'azulmetileno', name: 'Azul de metileno', E0: 0.53, n: 2, oxColor: 'azul', redColor: 'incoloro', oxHex: '#2563eb', redHex: '#e5e7eb', medium: 'ácido 1 M' },
-  { id: 'indigo', name: 'Índigo tetrasulfonato', E0: 0.36, n: 2, oxColor: 'azul', redColor: 'incoloro', oxHex: '#1d4ed8', redHex: '#e5e7eb', medium: 'ácido 1 M' },
+  { id: 'difenilamina', name: 'Difenilamina', E0: 0.76, n: 2, oxColor: 'violeta', redColor: 'incoloro', oxHex: '#7c3aed', redHex: '#e5e7eb', medium: 'ácido diluido' },
+  { id: 'azulmetileno', name: 'Azul de metileno', E0: 0.53, n: 2, oxColor: 'azul', redColor: 'incoloro', oxHex: '#2563eb', redHex: '#e5e7eb', medium: 'ácido 1 M (pH 0)' },
+  { id: 'indigo', name: 'Índigo tetrasulfonato', E0: 0.36, n: 2, oxColor: 'azul', redColor: 'incoloro', oxHex: '#1d4ed8', redHex: '#e5e7eb', medium: 'ácido 1 M (pH 0)' },
 ];
+
+/**
+ * Indicadores que NO son redox clásicos (su color no depende del potencial del sistema):
+ *  - almidón: complejo azul con I₃⁻ (específico para yodo);
+ *  - KMnO₄: autoindicador (el primer exceso de MnO₄⁻ da color rosa).
+ */
+export interface SpecialRedoxIndicator {
+  id: string;
+  name: string;
+  note: string;
+  /** cuplas con las que se puede usar */
+  couples: string[];
+}
+
+export const SPECIAL_REDOX_INDICATORS: SpecialRedoxIndicator[] = [
+  {
+    id: 'almidon',
+    name: 'Almidón (específico para I₂)',
+    note: 'No es un indicador redox: forma un complejo azul intenso con I₃⁻. En la valoración de I₂ con tiosulfato se agrega cerca del punto final (cuando la solución es amarillo pálido) y el punto final es la desaparición del azul.',
+    couples: ['I3'],
+  },
+  {
+    id: 'kmno4',
+    name: 'KMnO₄ (autoindicador)',
+    note: 'El propio titulante indica el punto final: el MnO₄⁻ es violeta intenso y el Mn²⁺ prácticamente incoloro, así que el primer exceso (≈ 2 × 10⁻⁶ M) da un rosa tenue que persiste 30 s.',
+    couples: ['MnO4'],
+  },
+];
+
+/** Concentración de MnO₄⁻ en exceso que ya se percibe como rosa tenue (mol/L). */
+export const KMNO4_VISIBLE_EXCESS = 2e-6;
 
 /** Electrodos de referencia (potencial vs ENH a 25 °C). */
 export const REFERENCES = [

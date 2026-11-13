@@ -20,7 +20,7 @@ import { Procedure, type Step } from '../components/Procedure';
 import { checkNum, useNum } from '../hooks';
 import { useChartTheme } from '../display';
 import { exportCsv } from '../components/exporters';
-import { indicatorGradientDefs, IndicatorLegend } from '../components/indicatorGradient';
+import { backgroundOpacity, indicatorGradientDefs, IndicatorLegend } from '../components/indicatorGradient';
 
 const SHARP_LABEL = { nitido: 'Nítido', 'poco-nitido': 'Poco nítido', 'no-detectable': 'No detectable' } as const;
 const SHARP_CLS = {
@@ -327,7 +327,7 @@ export default function TitrationTab() {
               <ResponsiveContainer width="100%" height={th.height}>
                 <LineChart data={ok.curve} margin={{ top: 24, right: 20, bottom: 30, left: 10 }}>
                   {/* fondo: color del indicador según el pH (degradé SVG alineado al eje 0–14) */}
-                  {indicatorGradientDefs({ id: gradId, ind, opacity: th.dark ? 0.32 : 0.38, yMin: 0, yMax: 14 })}
+                  {indicatorGradientDefs({ id: gradId, ind, opacity: backgroundOpacity(th.dark), yMin: 0, yMax: 14 })}
                   <ReferenceArea y1={0} y2={14} fill={`url(#${gradId})`} fillOpacity={1} stroke="none" ifOverflow="hidden" />
                   <CartesianGrid stroke={th.grid} />
                   <XAxis

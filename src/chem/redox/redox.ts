@@ -152,3 +152,57 @@ export function redoxCurve(t: RedoxTitration, Vmax: number): RedoxPoint[] {
     .sort((a, b) => a - b)
     .map((V) => ({ V, E: potentialAt(t, V) }));
 }
+
+/* ---------------- Indicadores redox ---------------- */
+
+export interface RedoxIndicatorLike {
+  E0: number;
+  n: number;
+}
+
+/** Intervalo de viraje (V vs ENH): E°′ ± 0,0592/n. */
+export function redoxTransitionRange(ind: RedoxIndicatorLike): { low: number; high: number } {
+  return { low: ind.E0 - NERNST_K / ind.n, high: ind.E0 + NERNST_K / ind.n };
+}
+
+export interface RedoxIndicatorCheck {
+  /** volumen en que E = E°′ del indicador */
+  Vend: number | null;
+  errorPct: number | null;
+  /** volúmenes en los extremos del intervalo de viraje */
+  Vlow: number | null;
+  Vhigh: number | null;
+  /** ¿todo el intervalo de viraje cae en el salto (±1 % de V_eq)? */
+  inJump: boolean;
+}
+
+/** Fracción de V_eq que define "el salto" para el chequeo del indicador. */
+export const JUMP_WINDOW = 0.01;
+
+export function evaluateRedoxIndicator(t: RedoxTitration, ind: RedoxIndicatorLike, Veq: number, Vmax: number): RedoxIndicatorCheck {
+  const r = redoxTransitionRange(ind);
+  const Vend = volumeAtPotential(t, ind.E0, Vmax);
+  const Vlow = volumeAtPotential(t, r.low, Vmax);
+  const Vhigh = volumeAtPotential(t, r.high, Vmax);
+  const within = (v: number | null) => v != null && Math.abs(v - Veq) <= JUMP_WINDOW * Veq;
+  return {
+    Vend,
+    errorPct: Vend == null ? null : ((Vend - Veq) / Veq) * 100,
+    Vlow,
+    Vhigh,
+    inJump: within(Vlow) && within(Vhigh),
+  };
+}
+
+/**
+ * KMnO₄ como autoindicador: el punto final es cuando el MnO₄⁻ en exceso llega a `cVisible` (mol/L).
+ *   (V − V_eq)·C_t = cVisible·(V_a + V)  ⇒  V = (V_eq·C_t + cVisible·V_a)/(C_t − cVisible)
+ */
+export function permanganateEndpoint(Veq: number, Va: number, Ct: number, cVisible: number): number {
+  return (Veq * Ct + cVisible * Va) / (Ct - cVisible);
+}
+
+/** Potencial en ±w de la equivalencia: el "salto" de la curva. */
+export function potentialJump(t: RedoxTitration, Veq: number, w = JUMP_WINDOW): { E1: number; E2: number } {
+  return { E1: potentialAt(t, Veq * (1 - w)), E2: potentialAt(t, Veq * (1 + w)) };
+}

@@ -170,3 +170,48 @@ describe('Solubilidad', () => {
     expect(r.Meq * r.Xeq ** 3 / 2e-39).toBeCloseTo(1, 6);
   });
 });
+
+import { redoxTransitionRange, evaluateRedoxIndicator, permanganateEndpoint, potentialJump } from '../redox/redox';
+import { REDOX_INDICATORS, SPECIAL_REDOX_INDICATORS } from '../data/redox';
+describe('Indicadores redox', () => {
+  const t: RedoxTitration = { analyte: Fe, analyteForm: 'red', Ca: 0.05, Va: 50, titrant: Ce, Ct: 0.1, logH: 0 };
+  const ind = (id: string) => REDOX_INDICATORS.find((i) => i.id === id)!;
+  it('valores de tabla: ferroína 1,11 (n = 1); difenilaminosulfónico 0,85 (n = 2); azul de metileno 0,53 (n = 2)', () => {
+    expect(ind('ferroina').E0).toBe(1.11);
+    expect(ind('dfas').E0).toBe(0.85);
+    expect(ind('azulmetileno').E0).toBe(0.53);
+    expect(ind('nitroferroina').E0).toBe(1.25);
+  });
+  it('intervalo de viraje = E°′ ± 0,0592/n', () => {
+    const r = redoxTransitionRange(ind('ferroina'));
+    expect(r.low).toBeCloseTo(1.11 - 0.05916, 10);
+    expect(r.high).toBeCloseTo(1.11 + 0.05916, 10);
+    expect(redoxTransitionRange(ind('dfas')).high - 0.85).toBeCloseTo(0.05916 / 2, 10);
+  });
+  it('Fe²⁺/Ce⁴⁺: ferroína vira dentro del salto; azul de metileno no', () => {
+    const f = evaluateRedoxIndicator(t, ind('ferroina'), 25, 50);
+    expect(f.inJump).toBe(true);
+    expect(Math.abs(f.errorPct!)).toBeLessThan(0.01);
+    const mb = evaluateRedoxIndicator(t, ind('azulmetileno'), 25, 50);
+    expect(mb.inJump).toBe(false);
+    expect(mb.errorPct!).toBeLessThan(-90);
+  });
+  it('salto de potencial (99 % → 101 %) para Fe/Ce: 0,798 → 1,322 V', () => {
+    const j = potentialJump(t, 25);
+    expect(j.E1).toBeCloseTo(0.68 + 0.05916 * Math.log10(99), 4);
+    expect(j.E2).toBeCloseTo(1.44 - 0.05916 * Math.log10(100), 3);
+  });
+  it('nitroferroína (1,19–1,31 V) también vira dentro del salto; difenilamina (0,76) no', () => {
+    expect(evaluateRedoxIndicator(t, ind('nitroferroina'), 25, 50).inJump).toBe(true);
+    expect(evaluateRedoxIndicator(t, ind('difenilamina'), 25, 50).inJump).toBe(false);
+  });
+  it('KMnO₄ autoindicador: exceso visible de 2 × 10⁻⁶ M → error muy pequeño y positivo', () => {
+    const V = permanganateEndpoint(25, 25, 0.02, 2e-6);
+    expect(((V - 25) * 0.02) / (25 + V)).toBeCloseTo(2e-6, 12);
+    expect(((V - 25) / 25) * 100).toBeGreaterThan(0);
+    expect(((V - 25) / 25) * 100).toBeLessThan(0.05);
+  });
+  it('indicadores específicos: almidón (I₃⁻) y KMnO₄', () => {
+    expect(SPECIAL_REDOX_INDICATORS.map((s) => s.id)).toEqual(['almidon', 'kmno4']);
+  });
+});

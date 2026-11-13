@@ -39,13 +39,29 @@ export function displayColor(hex: string, name: string): string {
 }
 
 /**
- * <defs> con el linearGradient del indicador; usar fill={`url(#${id})`} en un ReferenceArea de yMin a yMax.
- * OJO: se llama como función ({indicatorGradientDefs(...)}), no como <Componente/>: Recharts sólo dibuja
+ * Rango de color genérico sobre el eje vertical (pH o potencial): por debajo de `low` el color
+ * `lowHex` (sólido), entre `low` y `high` un degradé, y por encima `highHex` (sólido).
+ * Lo usan los indicadores ácido-base (pH) y los redox (E).
+ */
+export interface ColorRange {
+  name: string;
+  low: number;
+  high: number;
+  lowHex: string;
+  highHex: string;
+  lowLabel: string; // ej. "rojo" o "rojo (forma reducida)"
+  highLabel: string;
+}
+
+/**
+ * <defs> con el linearGradient; usar fill={`url(#${id})`} en un ReferenceArea que cubra exactamente
+ * el dominio del eje [yMin, yMax].
+ * OJO: se llama como función ({colorBackgroundDefs(...)}), no como <Componente/>: Recharts sólo dibuja
  * elementos SVG literales (como <defs>) dentro del gráfico y descarta componentes propios.
  */
-export function indicatorGradientDefs(props: { id: string; ind: Indicator; opacity: number; yMin?: number; yMax?: number }) {
-  const { ind } = props;
-  const stops = indicatorGradientStops(ind.low, ind.high, displayColor(ind.acidHex, ind.acidColor), displayColor(ind.baseHex, ind.baseColor), props.yMin, props.yMax);
+export function colorBackgroundDefs(props: { id: string; range: ColorRange; opacity: number; yMin: number; yMax: number }) {
+  const r = props.range;
+  const stops = indicatorGradientStops(r.low, r.high, r.lowHex, r.highHex, props.yMin, props.yMax);
   return (
     <defs>
       <linearGradient id={props.id} x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
@@ -57,25 +73,52 @@ export function indicatorGradientDefs(props: { id: string; ind: Indicator; opaci
   );
 }
 
-/** Leyenda: color ácido → degradé → color básico, con el intervalo de viraje. */
-export function IndicatorLegend({ ind, fmt }: { ind: Indicator; fmt: (x: number) => string }) {
-  const a = displayColor(ind.acidHex, ind.acidColor);
-  const b = displayColor(ind.baseHex, ind.baseColor);
+/** Opacidad del fondo: moderada, un poco menor en tema oscuro. */
+export const backgroundOpacity = (dark: boolean) => (dark ? 0.32 : 0.38);
+
+/** Rango de color de un indicador ácido-base (color ácido abajo, básico arriba). */
+export function acidBaseRange(ind: Indicator): ColorRange {
+  return {
+    name: ind.name,
+    low: ind.low,
+    high: ind.high,
+    lowHex: displayColor(ind.acidHex, ind.acidColor),
+    highHex: displayColor(ind.baseHex, ind.baseColor),
+    lowLabel: ind.acidColor,
+    highLabel: ind.baseColor,
+  };
+}
+
+/** Compatibilidad: fondo de un indicador ácido-base en eje de pH. */
+export function indicatorGradientDefs(props: { id: string; ind: Indicator; opacity: number; yMin?: number; yMax?: number }) {
+  return colorBackgroundDefs({ id: props.id, range: acidBaseRange(props.ind), opacity: props.opacity, yMin: props.yMin ?? 0, yMax: props.yMax ?? 14 });
+}
+
+/** Leyenda genérica: color bajo → degradé (intervalo) → color alto. */
+export function ColorRangeLegend({ range, fmt, axis, unit = '' }: { range: ColorRange; fmt: (x: number) => string; axis: string; unit?: string }) {
+  const a = range.lowHex;
+  const b = range.highHex;
+  const u = unit ? ` ${unit}` : '';
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm" aria-label={`Leyenda del indicador ${ind.name}`}>
-      <strong>{ind.name}</strong>
+    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm" aria-label={`Leyenda del indicador ${range.name}`}>
+      <strong>{range.name}</strong>
       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
         <span className="inline-block h-4 w-6 rounded border border-slate-300 dark:border-slate-600" style={{ background: a }} />
-        {ind.acidColor} (pH &lt; {fmt(ind.low)})
+        {range.lowLabel} ({axis} &lt; {fmt(range.low)}{u})
       </span>
       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
         <span className="inline-block h-4 w-16 rounded border border-slate-300 dark:border-slate-600" style={{ background: `linear-gradient(to right, ${a}, ${b})` }} />
-        viraje {fmt(ind.low)}–{fmt(ind.high)}
+        viraje {fmt(range.low)}–{fmt(range.high)}{u}
       </span>
       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
         <span className="inline-block h-4 w-6 rounded border border-slate-300 dark:border-slate-600" style={{ background: b }} />
-        {ind.baseColor} (pH &gt; {fmt(ind.high)})
+        {range.highLabel} ({axis} &gt; {fmt(range.high)}{u})
       </span>
     </div>
   );
+}
+
+/** Leyenda de un indicador ácido-base. */
+export function IndicatorLegend({ ind, fmt }: { ind: Indicator; fmt: (x: number) => string }) {
+  return <ColorRangeLegend range={acidBaseRange(ind)} fmt={fmt} axis="pH" />;
 }

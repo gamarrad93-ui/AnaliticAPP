@@ -4,9 +4,9 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from 'recharts';
 import { DataGrid, emptyGrid, gridFromText, gridToPoints } from '../components/DataGrid';
-import { linearRegression, standardAddition, type Regression } from '../../chem/stats/regression';
-import { MODEL_LABELS, fitAllModels } from '../../chem/stats/calibrationModels';
-import { modelEquation } from '../practicas/CalibrationPractice';
+import { detectionLimits, inversePrediction, linearRegression, standardAddition, type Regression } from '../../chem/stats/regression';
+import { parseList } from '../../chem/numeric/table';
+import { FourModelsSection } from '../components/FourModels';
 import { fmtFixed, fmtSig, fmtTick, niceTicks, texNum } from '../../chem/numeric/format';
 import { formatWithUncertainty } from '../../chem/stats/sigfigs';
 import { Alert, NumField, Segmented, Stat } from '../components/fields';
@@ -57,6 +57,7 @@ export default function CalibrationTab() {
   const [xUnit, setXUnit] = useState('');
   const [conf, setConf] = useState<Conf>('0.95');
   const dil = useNum('1');
+  const [y0raw, setY0raw] = useState('13,5');
   const dilErr = mode === 'sa' ? checkNum(dil.value, dil.raw, { positive: true }) : null;
 
   const dGrid = useDeferredValue(grid);
@@ -80,6 +81,10 @@ export default function CalibrationTab() {
   const confidence = Number(conf);
   const reg = 'reg' in fit ? fit.reg : null;
   const sa = reg && mode === 'sa' ? standardAddition(reg, confidence) : null;
+  const y0list = parseList(y0raw);
+  const y0mean = y0list.values.length && !y0list.bad.length ? y0list.values.reduce((a, b) => a + b, 0) / y0list.values.length : null;
+  const lim = reg && mode === 'cal' ? detectionLimits(reg) : null;
+  const pred = reg && mode === 'cal' && y0mean != null ? inversePrediction(reg, y0mean, y0list.values.length, confidence) : null;
 
   // datos para graficar
   const chart = useMemo(() => {
@@ -100,9 +105,11 @@ export default function CalibrationTab() {
   if (reg) {
     if (reg.n < 5) warnings.push('Se recomiendan al menos 5 o 6 estándares para una calibración confiable.');
     if (reg.r < 0.99 && mode === 'cal') warnings.push('r < 0,99: revisá la linealidad en el gráfico de residuos (r alto no garantiza linealidad, pero r bajo indica problemas).');
+    if (pred && 'x' in fit && (pred.x0 < Math.min(...fit.x) || pred.x0 > Math.max(...fit.x))) warnings.push('La concentración de la desconocida cae fuera del rango de los estándares: es una extrapolación y no es confiable.');
+    if (pred && lim && pred.x0 < lim.loq) warnings.push(`La concentración de la desconocida está por debajo del LOQ (${fmtSig(lim.loq, 3)}): se detecta pero no se cuantifica con buena precisión.`);
   }
 
-  const steps = reg ? buildSteps(reg, sa, mode) : [];
+  const steps = reg ? buildSteps(reg, sa, mode, lim, pred, confidence) : [];
 
   return (
     <div className="space-y-4">
@@ -122,12 +129,24 @@ export default function CalibrationTab() {
               {mode === 'cal' && <button className="btn" onClick={() => setGrid(gridFromText(EXAMPLE_CR))}>Ejemplo: Cr por absorción atómica</button>}
               <button className="btn" onClick={() => setGrid(emptyGrid())}>Vaciar tabla</button>
             </div>
-            {mode === 'sa' && <NumField label="Unidad de concentración (opcional)" value={xUnit} onChange={setXUnit} placeholder={unit || 'mg/L'} />}
-            {mode === 'sa' && <div>
+            <NumField label="Unidad de concentración (opcional)" value={xUnit} onChange={setXUnit} placeholder={unit || 'mg/L'} />
+            <div>
               <span className="label">Nivel de confianza</span>
               <Segmented ariaLabel="Nivel de confianza" value={conf} onChange={setConf} options={[{ value: '0.90', label: '90 %' }, { value: '0.95', label: '95 %' }, { value: '0.99', label: '99 %' }]} />
-            </div>}
+            </div>
           </section>
+          {mode === 'cal' && (
+            <section className="card space-y-3">
+              <h2 className="card-title">Muestra desconocida</h2>
+              <NumField
+                label="Señal medida (una o varias réplicas)"
+                value={y0raw}
+                onChange={setY0raw}
+                error={y0list.bad.length ? `No se pudo leer: ${y0list.bad.join(', ')}` : null}
+                hint="Para varias réplicas separá con punto y coma: 13,5; 13,4; 13,6. Dejalo vacío si no hay muestra."
+              />
+            </section>
+          )}
           {mode === 'sa' && (
             <section className="card space-y-3">
               <h2 className="card-title">Muestra original</h2>
@@ -142,6 +161,7 @@ export default function CalibrationTab() {
             <>
               {warnings.map((w, i) => <Alert key={i} kind="warn">{w}</Alert>)}
               <section className="card">
+                {mode === 'cal' && <p className="mb-2 text-sm text-slate-600 dark:text-slate-400">Modelo lineal (mínimos cuadrados ordinarios): parámetros con sus errores, LOD/LOQ y la concentración de la desconocida con su intervalo de confianza. La comparación con los otros modelos está más abajo.</p>}
                 <div className="mb-3 text-center font-mono text-lg">
                   y = ({fmtSig(reg.slope, 4)} ± {fmtSig(reg.sSlope, 2)})·x {reg.intercept >= 0 ? '+' : '−'} ({fmtSig(Math.abs(reg.intercept), 4)} ± {fmtSig(reg.sIntercept, 2)})
                 </div>
@@ -149,7 +169,16 @@ export default function CalibrationTab() {
                   <Stat label="Pendiente b" value={fmtSig(reg.slope, 5)} sub={`s_b = ${fmtSig(reg.sSlope, 3)}`} />
                   <Stat label="Ordenada a" value={fmtSig(reg.intercept, 5)} sub={`s_a = ${fmtSig(reg.sIntercept, 3)}`} />
                   <Stat label="r" value={fmtFixed(reg.r, 5)} sub={`R² = ${fmtFixed(reg.r2, 5)}`} />
-                  <Stat label="Cantidad de puntos" value={reg.n} />
+                  <Stat label="s_y/x" value={fmtSig(reg.syx, 4)} sub={`n = ${reg.n}; gl = ${reg.df}`} />
+                  {lim && <Stat label="LOD (3,3·s_y/x / b)" value={fmtSig(lim.lod, 3)} sub={unit} />}
+                  {lim && <Stat label="LOQ (10·s_y/x / b)" value={fmtSig(lim.loq, 3)} sub={unit} />}
+                  {pred && (
+                    <Stat
+                      label={`Desconocida x₀ (IC ${Math.round(confidence * 100)} %)`}
+                      value={formatWithUncertainty(pred.x0, pred.halfWidth).text}
+                      sub={`s_x₀ = ${fmtSig(pred.sx0, 3)} · t = ${fmtFixed(pred.t, 3)} · m = ${pred.m} ${unit}`}
+                    />
+                  )}
                   {sa && (
                     <>
                       <Stat label={`x_E en la solución medida (IC ${Math.round(confidence * 100)} %)`} value={formatWithUncertainty(sa.xE, sa.halfWidth).text} sub={`s_xE = ${fmtSig(sa.sxE, 3)} · t = ${fmtFixed(sa.t, 3)} ${unit}`} />
@@ -161,13 +190,32 @@ export default function CalibrationTab() {
                 </div>
               </section>
 
+              {mode === 'cal' && 'x' in fit && (
+                <FourModelsSection
+                  x={fit.x}
+                  y={fit.y}
+                  xLabel={xLabel}
+                  yLabel={yLabel}
+                  y0={y0mean}
+                  unit={unit}
+                  extraCsvRows={[
+                    [],
+                    ['Modelo lineal: s_y/x', reg.syx],
+                    ['LOD (3,3·s/b)', lim?.lod ?? ''],
+                    ['LOQ (10·s/b)', lim?.loq ?? ''],
+                    ...(pred ? [['x0 (lineal)', pred.x0], ['s_x0', pred.sx0], [`IC ${Math.round(confidence * 100)} % +/-`, pred.halfWidth]] : []),
+                  ]}
+                />
+              )}
+
+              {mode === 'sa' && (<>
               <ChartCard
-                title={mode === 'cal' ? 'Curva de calibración' : 'Adición estándar (extrapolación a y = 0)'}
-                filename={mode === 'cal' ? 'calibracion.png' : 'adicion-estandar.png'}
+                title="Adición estándar (extrapolación a y = 0)"
+                filename="adicion-estandar.png"
                 actions={
                   <button
                     className="btn"
-                    onClick={() => exportCsv([[xLabel, yLabel, 'y ajustada', 'residuo'], ...chart.points.map((p, i) => [p.x, p.y, reg.fitted[i], p.res]), [], ['pendiente', reg.slope], ['s pendiente', reg.sSlope], ['ordenada', reg.intercept], ['s ordenada', reg.sIntercept], ['r', reg.r], ['R2', reg.r2], ...(sa ? [['xE', sa.xE], ['s_xE', sa.sxE], ['IC +/-', sa.halfWidth]] : [])], mode === 'cal' ? 'calibracion.csv' : 'adicion-estandar.csv')}
+                    onClick={() => exportCsv([[xLabel, yLabel, 'y ajustada', 'residuo'], ...chart.points.map((p, i) => [p.x, p.y, reg.fitted[i], p.res]), [], ['pendiente', reg.slope], ['s pendiente', reg.sSlope], ['ordenada', reg.intercept], ['s ordenada', reg.sIntercept], ['r', reg.r], ['R2', reg.r2], ...(sa ? [['xE', sa.xE], ['s_xE', sa.sxE], ['IC +/-', sa.halfWidth]] : [])], 'adicion-estandar.csv')}
                   >
                     ⬇ CSV
                   </button>
@@ -190,20 +238,6 @@ export default function CalibrationTab() {
                 </ResponsiveContainer>
               </ChartCard>
 
-              {mode === 'cal' && 'x' in fit && (
-                <section className="card overflow-x-auto">
-                  <h3 className="card-title">Comparar modelos de ajuste</h3>
-                  <table className="table-basic">
-                    <thead><tr><th>Modelo</th><th>Ecuación</th><th>R²</th><th>s residuos</th></tr></thead>
-                    <tbody>
-                      {fitAllModels(fit.x, fit.y).map((f) => (
-                        <tr key={f.id}><td>{MODEL_LABELS[f.id]}</td><td className="font-mono">{modelEquation(f, 'x').replace('A =', 'y =')}</td><td className="font-mono">{fmtFixed(f.r2, 5)}</td><td className="font-mono">{fmtSig(f.sres, 3)}</td></tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">Elegir el modelo por inspección visual, R² y residuos. En los modelos sin ordenada el R² se calcula sin centrar (igual que Excel), así que no se compara directamente con los otros. El resto de esta pestaña usa el modelo lineal con ordenada.</p>
-                </section>
-              )}
 
               <ChartCard title="Gráfico de residuos (y − ŷ)" filename="residuos.png">
                 <ResponsiveContainer width="100%" height={Math.round(th.height * 0.55)}>
@@ -231,6 +265,7 @@ export default function CalibrationTab() {
                   </tbody>
                 </table>
               </section>
+              </>)}
               <Procedure steps={steps} />
             </>
           )}
@@ -240,7 +275,14 @@ export default function CalibrationTab() {
   );
 }
 
-function buildSteps(reg: Regression, sa: ReturnType<typeof standardAddition> | null, mode: Mode): Step[] {
+function buildSteps(
+  reg: Regression,
+  sa: ReturnType<typeof standardAddition> | null,
+  mode: Mode,
+  lim: ReturnType<typeof detectionLimits> | null,
+  pred: ReturnType<typeof inversePrediction> | null,
+  conf: number,
+): Step[] {
   const t = (x: number, s = 5) => texNum(x, s);
   const steps: Step[] = [
     {
@@ -265,6 +307,26 @@ function buildSteps(reg: Regression, sa: ReturnType<typeof standardAddition> | n
       ],
     },
   ];
+  if (mode === 'cal') {
+    if (lim) steps.push({ title: 'Límites de detección y cuantificación', tex: `\\mathrm{LOD} = \\frac{3{,}3\\,s_{y/x}}{b} = ${t(lim.lod, 3)},\\qquad \\mathrm{LOQ} = \\frac{10\\,s_{y/x}}{b} = ${t(lim.loq, 3)}` });
+    if (pred)
+      steps.push({
+        title: `Concentración de la desconocida (media de m = ${pred.m} réplica(s)) e intervalo de confianza`,
+        tex: [
+          `x_0 = \\frac{y_0 - a}{b} = \\frac{${t(pred.y0)} - ${t(reg.intercept)}}{${t(reg.slope)}} = ${t(pred.x0)}`,
+          `s_{x_0} = \\frac{s_{y/x}}{b}\\sqrt{\\frac{1}{m}+\\frac{1}{n}+\\frac{(y_0-\\bar y)^2}{b^2 S_{xx}}} = ${t(pred.sx0, 4)}`,
+          `t_{${Math.round(conf * 100)}\\%,\\,${reg.df}} = ${t(pred.t, 4)}\\quad\\Rightarrow\\quad x_0 \\pm t\\,s_{x_0} = ${t(pred.x0, 4)} \\pm ${t(pred.halfWidth, 3)}`,
+        ],
+      });
+    steps.push({
+      title: 'Los otros tres modelos',
+      text: 'Por el origen: m = Σxy/Σx². Cuadrático: mínimos cuadrados con columnas 1, x, x². Ponderado: pesos wᵢ = 1/xᵢ² normalizados a Σw = n (se omiten los x = 0).',
+      tex: [
+        'm_w = \\frac{\\sum w_i (x_i-\\bar x_w)(y_i-\\bar y_w)}{\\sum w_i (x_i-\\bar x_w)^2},\\quad b_w = \\bar y_w - m_w\\,\\bar x_w,\\quad \\bar x_w = \\frac{\\sum w_i x_i}{n}',
+        'R^2_{aj} = 1 - (1-R^2)\\,\\frac{n-1}{n-p}',
+      ],
+    });
+  }
   if (mode === 'sa' && sa) {
     steps.push({
       title: 'Adición estándar: extrapolación a señal cero',

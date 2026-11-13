@@ -140,6 +140,29 @@ Intervalo de confianza de la media: x̄ ± t·s/√n verificado a mano.
 | I₃⁻ con S₂O₃²⁻ ([I⁻] = 0,1 M) | V_eq = 12,5 mL; E antes del PE = Nernst del yodo | Cálculo a mano |
 | Curvas | Monótonas | — |
 
+### Indicadores redox (fondo de color y "¿Qué indicador sirve?")
+Intervalo de viraje: E°′ ± 0,0592/n V (vs ENH). Valores usados y verificación:
+
+| Indicador | E°′ usado (V) | n | Forma oxidada | Forma reducida | Medio | Comparación con tablas |
+|---|---|---|---|---|---|---|
+| Nitroferroína | 1,25 | 1 | celeste pálido | rojo-violeta | H₂SO₄ 1 M | 1,25 en Skoog y en tablas generales |
+| Ferroína | 1,11 | 1 | celeste pálido | rojo | H₂SO₄ 1 M | Skoog 1,11 (H₂SO₄ 1 M); E° estándar 1,06; Harris 1,147. Se usa el formal en H₂SO₄ 1 M |
+| 5,6-Dimetilferroína | 0,97 | 1 | celeste pálido | rojo | H₂SO₄ 1 M | Harris 0,97 |
+| 2,2′-Bipiridina Fe(II) | 0,97 | 1 | celeste pálido | rojo | ácido diluido | tablas generales 0,97 (corregido: antes figuraba "incoloro" como forma oxidada) |
+| Ácido difenilaminosulfónico | 0,85 | 2 | rojo-violeta | incoloro | ácido diluido | Skoog 0,85; Harris 0,84 |
+| Difenilamina | 0,76 | 2 | violeta | incoloro | ácido diluido | Skoog 0,76 (corregido el medio) |
+| Azul de metileno | 0,53 | 2 | azul | incoloro | ácido 1 M (pH 0) | 0,53 a pH 0 (0,01 a pH 7) |
+| Índigo tetrasulfonato | 0,36 | 2 | azul | incoloro | ácido 1 M (pH 0) | Skoog 0,36; otras tablas 0,37 |
+
+Casos especiales (no son indicadores redox clásicos): **almidón** (complejo azul con I₃⁻, específico para yodo) y **KMnO₄ autoindicador** (punto final con un exceso visible de MnO₄⁻ ≈ 2 × 10⁻⁶ M).
+
+Pruebas:
+- Intervalo de viraje = E°′ ± 0,0592/n.
+- Fe²⁺/Ce⁴⁺: ferroína y nitroferroína viran dentro del salto (±1 % de V_eq); difenilamina y azul de metileno no.
+- Salto de potencial al 99 % y 101 % = 0,68 + 0,05916·log 99 y 1,44 − 0,05916·log 100.
+- KMnO₄: el volumen de punto final deja exactamente 2 × 10⁻⁶ M de MnO₄⁻ en exceso (error +0,02 %).
+- Fondo de color: las paradas del degradé caen exactamente en el inicio y el fin del viraje sobre el eje (mismo cálculo que en ácido-base).
+
 ### EDTA
 - α(Y⁴⁻) = 0,30 (pH 10), 0,81 (pH 11), 0,98 (pH 12), 3,8 × 10⁻⁴ (pH 7): **coincide con la tabla de Harris**.
 - 50,0 mL Ca²⁺ 0,0400 M con EDTA 0,0800 M a pH 10: V_eq = 25 mL; pCa a 5 mL = 1,536; en el PE = 5,85 (√(C/K′)); a 26 mL = log(K′·[Y′]/[CaY]). Todos verificados a mano.
@@ -159,6 +182,23 @@ Intervalo de confianza de la media: x̄ ± t·s/√n verificado a mano.
 - "¿Precipita?": AgNO₃ 10⁻⁴ + NaCl 10⁻⁴ (volúmenes iguales) → Q = 2,5 × 10⁻⁹ > Ksp: sí. Con 10⁻⁶: no. Fe(OH)₃ (precipitación casi total): Q final = Ksp con 6 cifras.
 
 ---
+
+## 3 bis. Calibración: cuatro modelos (`src/chem/__tests__/fourModels.test.ts`)
+
+Datos: ejemplo de fluorescencia de Miller & Miller (x = 0, 2, …, 12; verificado a mano). Referencias: `numpy.polyfit` y `statsmodels` (OLS y WLS).
+
+| Modelo | Parámetros | R² | R² ajustado | s_y/x |
+|---|---|---|---|---|
+| a) Lineal y = mx + b | m = 1,93036; b = 1,51786 | 0,997760 | 0,997312 | 0,43285 |
+| b) Por el origen y = mx | m = 2,10549 | 0,985897 (centrado) | 0,985897 | 0,99155 |
+| c) Cuadrático | a = 0,013988; b = 1,76250; c = 1,79762 | 0,998389 | 0,997584 | 0,41043 |
+| d) Ponderado 1/x² (sin x = 0) | m = 1,98673; b = 1,02079 | 0,999240 (ponderado, = statsmodels WLS) | 0,999049 | 0,15450 (pesos normalizados) |
+
+Coinciden con 11–12 decimales. Además:
+- Para comparar los modelos se usa una base común: R² y R² ajustado con los residuos sin ponderar de todos los estándares (en los tres no ponderados coincide con su R²).
+- Concentración de una señal con cada modelo: ida y vuelta exacta.
+- Patrón de residuos: una forma de U se detecta; residuos al azar no.
+- Mejor modelo: con datos curvos se elige el cuadrático; con los datos lineales de libro se elige el lineal (el cuadrático mejora el R² ajustado en menos de 0,0005, y ante esa diferencia se prefiere el modelo más simple).
 
 ## 4. Prácticos de laboratorio (`src/chem/__tests__/lab.test.ts`)
 

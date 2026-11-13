@@ -56,6 +56,8 @@ export default function AboutTab() {
           <li>Se informa si cada punto es detectable mediante el <strong>salto de pH entre el 98 % y el 102 %</strong> del tramo: ≥ 1,5 nítido; 0,5–1,5 poco nítido; &lt; 0,5 no detectable con indicador visual.</li>
           <li>Indicadores: intervalos de viraje tabulados. El pH de punto final por defecto es el centro del intervalo (editable).</li>
           <li>Error de titulación = (V<sub>final</sub> − V<sub>eq</sub>)/V<sub>eq</sub> × 100. |error| ≤ 0,1 %: excelente; ≤ 0,5 %: aceptable.</li>
+          <li>El fondo del gráfico toma el color del indicador elegido a cada pH (o a cada potencial en redox): color de una forma, degradé en el intervalo de viraje y color de la otra forma.</li>
+          <li>Redox: el intervalo de viraje es E°′ ± 0,059/n V; un indicador sirve si todo ese intervalo cae en el salto de la curva (±1 % del volumen de equivalencia). Almidón y KMnO₄ son indicadores específicos.</li>
         </ul>
       </Sec>
 
@@ -69,6 +71,7 @@ export default function AboutTab() {
       <Sec title="Calibración y estadística">
         <ul className="list-disc space-y-1 pl-5">
           <li>Regresión por <strong>mínimos cuadrados ordinarios</strong> (supone error sólo en y, varianza constante).</li>
+          <li><strong>Cuatro modelos</strong> sobre los mismos datos: lineal, lineal por el origen, cuadrático y lineal ponderado (pesos 1/x², sin los x = 0). Se comparan con R², R² ajustado (penaliza parámetros extra) y el patrón de los residuos; ante R² ajustados prácticamente iguales se prefiere el modelo más simple. LOD = 3,3·s<sub>y/x</sub>/b y LOQ = 10·s<sub>y/x</sub>/b con el modelo lineal.</li>
           <li>Adición estándar por extrapolación a señal cero, con intervalo de confianza usando t con n − 2 grados de libertad.</li>
           <li>Valores críticos de t y F calculados con la función beta incompleta; G de Grubbs a partir de t. Tabla Q de Dixon tabulada para 3 ≤ n ≤ 10.</li>
           <li>Propagación de errores de primer orden con derivadas numéricas: sirve para cualquier fórmula que se escriba.</li>

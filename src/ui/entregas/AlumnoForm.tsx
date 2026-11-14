@@ -10,6 +10,7 @@ import type { PracticaDef } from '../../chem/practicos/motor';
 import type { Ajustes, Entrega, MaterialEntregado, PracticaId } from '../../chem/practicos/tipos';
 import { Alert } from '../components/fields';
 import { nuevoId } from './almacen';
+import { entregaP3Aleatoria, rng } from '../../chem/practicos/ejemplos';
 import { Celda, NOMBRE_CRITERIO } from './comunes';
 
 const vacioMat = (): MaterialEntregado => ({ codigo: '', vNominal: '', tolerancia: '', v20: '', tramos: ['', '', '', '', ''] });
@@ -78,10 +79,18 @@ function validar(p: PracticaDef, e: Entrega): Map<string, string> {
   return err;
 }
 
-export default function AlumnoForm(props: { entregas: Entrega[]; ajustes: Ajustes; onEnviar: (e: Entrega) => void }) {
-  const [pid, setPid] = useState<PracticaId>('p2');
+export default function AlumnoForm(props: {
+  entregas: Entrega[];
+  ajustes: Ajustes;
+  onEnviar?: (e: Entrega) => void;
+  /** planilla con la que arranca el formulario (ej. una de prueba ya completada) */
+  inicial?: Entrega;
+  /** muestra la planilla tal como la entregó el alumno, sin poder editarla */
+  soloLectura?: boolean;
+}) {
+  const [pid, setPid] = useState<PracticaId>(props.inicial?.practica ?? 'p2');
   const p = practica(pid)!;
-  const [e, setE] = useState<Entrega>(() => borrador(p));
+  const [e, setE] = useState<Entrega>(() => (props.inicial ? structuredClone(props.inicial) : borrador(p)));
   const [errores, setErrores] = useState<Map<string, string> | null>(null);
   const [enviada, setEnviada] = useState(false);
 
@@ -132,7 +141,7 @@ export default function AlumnoForm(props: { entregas: Entrega[]; ajustes: Ajuste
     const err = validar(p, e);
     setErrores(err);
     if (err.size) return;
-    props.onEnviar({ ...structuredClone(e), id: nuevoId(), creada: new Date().toISOString() });
+    props.onEnviar?.({ ...structuredClone(e), id: nuevoId(), creada: new Date().toISOString(), ejemplo: undefined });
     setEnviada(true);
   };
 
@@ -162,7 +171,7 @@ export default function AlumnoForm(props: { entregas: Entrega[]; ajustes: Ajuste
   const esBuretaP1 = /^B/i.test(e.materiales.material?.codigo.trim() ?? '');
 
   return (
-    <div className="space-y-4">
+    <fieldset disabled={!!props.soloLectura} className="m-0 min-w-0 space-y-4 border-0 p-0">
       <datalist id="dl-pipeta">{codigos.pipeta.map((c) => <option key={c} value={c} />)}</datalist>
       <datalist id="dl-matraz">{codigos.matraz.map((c) => <option key={c} value={c} />)}</datalist>
       <datalist id="dl-bureta">{codigos.bureta.map((c) => <option key={c} value={c} />)}</datalist>
@@ -179,6 +188,21 @@ export default function AlumnoForm(props: { entregas: Entrega[]; ajustes: Ajuste
             </option>
           ))}
         </select>
+        {pid === 'p3' && !props.soloLectura && (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg bg-brand-50 px-3 py-2 text-sm dark:bg-brand-950/40">
+            <button
+              className="btn"
+              onClick={() => {
+                const x = entregaP3Aleatoria(props.ajustes, rng(Math.floor(Math.random() * 1e9)), e.alumno.nombre.trim() || 'Alumno de prueba');
+                setE({ ...x, id: '', creada: '', ejemplo: undefined, alumno: { ...x.alumno, fecha: e.alumno.fecha || hoy() } });
+                setErrores(null);
+              }}
+            >
+              🎲 Llenar con datos de prueba
+            </button>
+            <span className="text-xs text-slate-600 dark:text-slate-400">Completa la planilla con datos al azar pero coherentes (para la demostración).</span>
+          </div>
+        )}
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
             <label className="label">Nombre</label>
@@ -375,7 +399,7 @@ export default function AlumnoForm(props: { entregas: Entrega[]; ajustes: Ajuste
                     <input type="checkbox" className="h-4 w-4 accent-brand-700" aria-label={`Determinación ${i + 1} promediable`} checked={f.promediable} onChange={(ev) => upd((x) => (x.filas[i].promediable = ev.target.checked))} />
                   </td>
                   <td>
-                    {e.filas.length > p.filas.min && (
+                    {!props.soloLectura && e.filas.length > p.filas.min && (
                       <button className="btn px-2 py-0.5 text-xs" aria-label={`Quitar determinación ${i + 1}`} onClick={() => upd((x) => x.filas.splice(i, 1))}>
                         ✕
                       </button>
@@ -386,7 +410,7 @@ export default function AlumnoForm(props: { entregas: Entrega[]; ajustes: Ajuste
             </tbody>
           </table>
         </div>
-        {e.filas.length < p.filas.max && (
+        {!props.soloLectura && e.filas.length < p.filas.max && (
           <button className="btn" onClick={() => upd((x) => x.filas.push({ datos: {}, promediable: true, resultados: {} }))}>
             + Agregar determinación
           </button>
@@ -452,11 +476,13 @@ export default function AlumnoForm(props: { entregas: Entrega[]; ajustes: Ajuste
           </ul>
         </Alert>
       )}
-      <div className="flex justify-end">
-        <button className="btn btn-primary px-6 py-2 text-base" onClick={enviar}>
-          📨 Enviar entrega
-        </button>
-      </div>
-    </div>
+      {!props.soloLectura && (
+        <div className="flex justify-end">
+          <button className="btn btn-primary px-6 py-2 text-base" onClick={enviar}>
+            📨 Enviar entrega
+          </button>
+        </div>
+      )}
+    </fieldset>
   );
 }

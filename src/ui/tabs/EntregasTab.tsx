@@ -3,7 +3,7 @@
  * Alumno: completa la planilla y sus resultados. Profesor: corrige con el motor de cálculo.
  */
 import { lazy, Suspense, useRef, useState } from 'react';
-import { generarEjemplos } from '../../chem/practicos/ejemplos';
+import { entregaP3Aleatoria, generarEjemplos, rng } from '../../chem/practicos/ejemplos';
 import type { Entrega } from '../../chem/practicos/tipos';
 import { Alert, Segmented } from '../components/fields';
 import { descargarTexto, useEntregas, validarImportacion } from '../entregas/almacen';
@@ -14,14 +14,21 @@ const ProfesorView = lazy(() => import('../entregas/ProfesorView'));
 export default function EntregasTab() {
   const { entregas, setEntregas, ajustes, setAjustes } = useEntregas();
   const [vista, setVista] = useState<'alumno' | 'profesor'>('alumno');
+  // planilla con la que arranca la vista Alumno (al cargar ejemplos: una de P3 ya completada)
+  const [inicialAlumno, setInicialAlumno] = useState<{ e?: Entrega; n: number }>({ n: 0 });
   const [msg, setMsg] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const cargarEjemplos = () => {
-    const ej = generarEjemplos(ajustes);
-    const ids = new Set(ej.map((e) => e.id));
-    setEntregas([...entregas.filter((e) => !ids.has(e.id)), ...ej]);
-    setMsg({ kind: 'ok', text: `Se cargaron ${ej.length} entregas de ejemplo. Miralas en la pestaña Profesor.` });
+    // P3 se sortea de nuevo cada vez (datos al azar pero coherentes)
+    const ej = generarEjemplos(ajustes, Math.floor(Math.random() * 1e9));
+    setEntregas([...entregas.filter((e) => !e.ejemplo), ...ej]);
+    const pl = entregaP3Aleatoria(ajustes, rng(Math.floor(Math.random() * 1e9)), 'Alumno de prueba');
+    setInicialAlumno((x) => ({ e: { ...pl, id: '', creada: '', ejemplo: undefined, alumno: { ...pl.alumno, fecha: new Date().toISOString().slice(0, 10) } }, n: x.n + 1 }));
+    setMsg({
+      kind: 'ok',
+      text: `Se cargaron ${ej.length} entregas de ejemplo (miralas en Profesor). En Alumno quedó una planilla de P3 ya completada, lista para enviar.`,
+    });
   };
 
   const importar = async (f: File) => {
@@ -97,7 +104,7 @@ export default function EntregasTab() {
 
       <Suspense fallback={<p className="p-8 text-center text-slate-500">Cargando…</p>}>
         {vista === 'alumno' ? (
-          <AlumnoForm entregas={entregas} ajustes={ajustes} onEnviar={(e) => setEntregas([...entregas, e])} />
+          <AlumnoForm key={inicialAlumno.n} inicial={inicialAlumno.e} entregas={entregas} ajustes={ajustes} onEnviar={(e) => setEntregas([...entregas, e])} />
         ) : (
           <ProfesorView entregas={entregas} ajustes={ajustes} setEntregas={setEntregas} setAjustes={setAjustes} />
         )}

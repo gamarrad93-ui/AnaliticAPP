@@ -11,7 +11,9 @@ import { buscarMaterial, corregirBureta, interpolarZ, normalizarCodigo, tramoMas
 import { promediablesPorCriterio, tratamiento } from '../practicos/estadistica';
 import { practica } from '../practicos/practicas';
 import { coincide, corregir } from '../practicos/correccion';
-import { generarEjemplos } from '../practicos/ejemplos';
+import { entregaP3Aleatoria, generarEjemplos, rng } from '../practicos/ejemplos';
+import { VARIANTES } from '../practicos/correccion';
+import type { Opciones } from '../practicos/motor';
 import type { Entrega } from '../practicos/tipos';
 
 const aj = ajustesPorDefecto();
@@ -212,7 +214,7 @@ describe('Corrección y diagnóstico', () => {
 
   it('los alumnos de ejemplo "correctos" tienen todo bien', () => {
     for (const id of ['ej-p1-1', 'ej-p1-4', 'ej-p2-1', 'ej-p3-1']) {
-      const c = diag(id);
+      const c = diag(ej.find((x) => x.id.startsWith(id))!.id);
       expect(c.calculo.errores).toEqual([]);
       expect(c.aciertos).toBe(c.total);
     }
@@ -224,9 +226,6 @@ describe('Corrección y diagnóstico', () => {
     ['ej-p2-2', 'No corrigió la lectura de la bureta'],
     ['ej-p2-3', 'Incluyó un valor no promediable'],
     ['ej-p2-4', 'Relación estequiométrica equivocada'],
-    ['ej-p3-2', 'volumen nominal en lugar del V20'],
-    ['ej-p3-3', 'tramo equivocado'],
-    ['ej-p3-4', 'factor de alícuota'],
   ])('%s → diagnóstico principal: %s', (id, texto) => {
     const c = diag(id);
     expect(c.aciertos).toBeLessThan(c.total);
@@ -237,5 +236,26 @@ describe('Corrección y diagnóstico', () => {
     const c = diag('ej-p2-3');
     const prom = c.campos.find((x) => x.seccion === 'promediables')!;
     expect(prom.ok).toBe(false);
+  });
+
+  it('P3 al azar (100 sorteos): el correcto saca todo bien y cada error se diagnostica', () => {
+    const p3 = practica('p3')!;
+    const errores: Partial<Opciones>[] = [{}, { volumen: 'nominal' }, { bureta: 'superior' }, { alicuota: 'sin' }, { relacion: 'uno' }, { promediables: 'todos' }, { t: 'z' }, { bureta: 'sin' }];
+    for (let seed = 1; seed <= 100; seed++) {
+      const r = rng(seed);
+      for (const op of errores) {
+        const e = entregaP3Aleatoria(aj, r, 'x', op);
+        const c = corregir(p3, e, aj);
+        expect(c.calculo.errores).toEqual([]);
+        const Cs = c.calculo.filas.map((f) => f.C);
+        Cs.forEach((x) => expect(x).toBeGreaterThan(0.085));
+        Cs.forEach((x) => expect(x).toBeLessThan(0.115));
+        if (!Object.keys(op).length) expect(c.aciertos).toBe(c.total);
+        else {
+          const v = VARIANTES.find((x) => JSON.stringify(x.op) === JSON.stringify(op))!;
+          expect(c.diagnosticos.map((d) => d.etiqueta)).toContain(v.etiqueta);
+        }
+      }
+    }
   });
 });

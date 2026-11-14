@@ -18,9 +18,9 @@ export default function EntregasTab() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const cargarEjemplos = () => {
-    const ej = generarEjemplos(ajustes);
-    const ids = new Set(ej.map((e) => e.id));
-    setEntregas([...entregas.filter((e) => !ids.has(e.id)), ...ej]);
+    // P3 se sortea de nuevo cada vez (datos al azar pero coherentes)
+    const ej = generarEjemplos(ajustes, Math.floor(Math.random() * 1e9));
+    setEntregas([...entregas.filter((e) => !e.ejemplo), ...ej]);
     setMsg({ kind: 'ok', text: `Se cargaron ${ej.length} entregas de ejemplo. Miralas en la pestaña Profesor.` });
   };
 

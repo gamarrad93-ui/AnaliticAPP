@@ -10,6 +10,7 @@ import type { PracticaDef } from '../../chem/practicos/motor';
 import type { Ajustes, Entrega, MaterialEntregado, PracticaId } from '../../chem/practicos/tipos';
 import { Alert } from '../components/fields';
 import { nuevoId } from './almacen';
+import { entregaP3Aleatoria, rng } from '../../chem/practicos/ejemplos';
 import { Celda, NOMBRE_CRITERIO } from './comunes';
 
 const vacioMat = (): MaterialEntregado => ({ codigo: '', vNominal: '', tolerancia: '', v20: '', tramos: ['', '', '', '', ''] });
@@ -179,6 +180,21 @@ export default function AlumnoForm(props: { entregas: Entrega[]; ajustes: Ajuste
             </option>
           ))}
         </select>
+        {pid === 'p3' && (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg bg-brand-50 px-3 py-2 text-sm dark:bg-brand-950/40">
+            <button
+              className="btn"
+              onClick={() => {
+                const x = entregaP3Aleatoria(props.ajustes, rng(Math.floor(Math.random() * 1e9)), e.alumno.nombre.trim() || 'Alumno de prueba');
+                setE({ ...x, id: '', creada: '', ejemplo: undefined, alumno: { ...x.alumno, fecha: e.alumno.fecha || hoy() } });
+                setErrores(null);
+              }}
+            >
+              🎲 Llenar con datos de prueba
+            </button>
+            <span className="text-xs text-slate-600 dark:text-slate-400">Completa la planilla con datos al azar pero coherentes (para la demostración).</span>
+          </div>
+        )}
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
             <label className="label">Nombre</label>

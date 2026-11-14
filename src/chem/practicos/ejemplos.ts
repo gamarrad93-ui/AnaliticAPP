@@ -8,6 +8,7 @@ import { OPCIONES_CORRECTAS, type Opciones, type PracticaDef } from './motor';
 import { practica } from './practicas';
 import type { Ajustes, CriterioDeclarado, Entrega, FilaEntregada, MaterialEntregado, PracticaId } from './tipos';
 import { buscarMaterial, codigoCompleto } from './material';
+import { promediablesPorCriterio } from './estadistica';
 
 /** Generador pseudoaleatorio con semilla (siempre los mismos ejemplos). */
 function rng(seed: number) {
@@ -128,32 +129,89 @@ function ejemplosP2(aj: Ajustes): Entrega[] {
   ];
 }
 
-/* ---------------- P3 ---------------- */
-function ejemplosP3(aj: Ajustes): Entrega[] {
+/* ---------------- P3 (datos al azar pero coherentes) ---------------- */
+
+/**
+ * Arma una entrega de P3 con datos aleatorios coherentes:
+ * C(NaOH) real entre 0,095 y 0,105 mol/L, m de oxálico 0,48–0,53 g, alícuota 10/100 mL,
+ * gastos ≈ 8 mL con ruido de lectura (±0,02 mL) y, a veces, un valor alejado.
+ * Los resultados del alumno se calculan con la variante de error `op` (vacía = correcto)
+ * y los promediables se marcan según el criterio (o todos, si el error es incluirlos).
+ */
+export function entregaP3Aleatoria(aj: Ajustes, r: () => number, nombre: string, op: Partial<Opciones> = {}, n = 1): Entrega {
   const p = practica('p3')!;
-  const mk = (n: number, bur: string, mat: string, pip: string, m: string, G: string[], marcas: boolean[], op: Partial<Opciones>) => {
-    const e = base('p3', n, NOMBRES[n - 1], n <= 2 ? 'G1' : 'G2');
-    e.materiales.bureta = material(aj, bur, '0,02');
-    e.materiales.matraz = material(aj, mat, '0,10');
-    e.materiales.pipeta = material(aj, pip, '0,02');
-    e.reactivos.patron = reactivo('99,5', 'OX-2024-031');
-    e.reactivos.titulante = reactivo('', 'NaOH-0326');
-    e.muestra = 'NaOH ≈ 0,1 mol/L';
-    e.datos.m = m;
-    e.filas = G.map((g, i) => fila({ G: g }, marcas[i]));
-    return rellenarResultados(p, e, aj, op);
-  };
-  return [
-    mk(1, 'B1005', 'MA10005', 'PA1013', '0,5104', ['8,03', '8,05', '8,04', '8,02'], [true, true, true, true], {}),
-    // V nominal de matraz y pipeta
-    mk(2, 'B1003', 'MA10005', 'PA1006', '0,5087', ['7,98', '8,01', '7,99', '8,00'], [true, true, true, true], { volumen: 'nominal' }),
-    // tramo de bureta equivocado
-    mk(3, 'B1011', 'MA10013', 'PA1002', '0,5122', ['8,13', '8,10', '8,12', '8,40'], [true, true, true, false], { bureta: 'superior' }),
-    // olvidó el factor de alícuota
-    mk(4, 'B1020', 'MA10010', 'PA1010', '0,5066', ['7,97', '7,95', '7,99', '7,96'], [true, true, true, true], { alicuota: 'sin' }),
-  ];
+  const elegir = <T,>(arr: T[]) => arr[Math.floor(r() * arr.length)];
+  const mats = (t: string, nom: number) => aj.materiales.filter((m) => m.tipo === t && m.nominal === nom);
+  let bureta = elegir(mats('bureta', 10));
+  let matraz = elegir(mats('matraz', 100));
+  let pipeta = elegir(mats('pipeta', 10));
+  // que el error elegido se note (si no, el diagnóstico no lo puede distinguir del redondeo)
+  if (op.bureta === 'superior') bureta = elegir(aj.materiales.filter((m) => m.tramos && Math.abs(m.tramos[3] - 8 - (m.tramos[4] - 10)) >= 0.02));
+  if (op.volumen === 'nominal')
+    for (let k = 0; k < 50 && Math.abs((pipeta.v20! / matraz.v20!) / 0.1 - 1) < 0.004; k++) {
+      matraz = elegir(mats('matraz', 100));
+      pipeta = elegir(mats('pipeta', 10));
+    }
+  const assay = 99.5 + Math.round(r() * 4) / 10; // 99,5–99,9 %
+  const Creal = 0.095 + r() * 0.01;
+  const m = Math.round((0.48 + r() * 0.05) * 1e4) / 1e4;
+  const Gc = (2 * m * (assay / 100) * (pipeta.v20! / matraz.v20!) * 1000) / (aj.masasMolares.H2C2O4_2H2O * Creal);
+  const corr = (G: number) => bureta.tramos![Math.round(Math.min(10, Math.max(2, G)) / 2) - 1] - 2 * (Math.round(Math.min(10, Math.max(2, G)) / 2));
+  if (op.bureta === 'sin' || op.bureta === 'superior')
+    for (let k = 0; k < 50 && Math.abs(corr(Gc)) < 0.02; k++) {
+      const cands = aj.materiales.filter((m) => m.tramos && Math.abs(m.tramos[3] - 8) >= 0.02 && (op.bureta !== 'superior' || Math.abs(m.tramos[3] - 8 - (m.tramos[4] - 10)) >= 0.02));
+      bureta = elegir(cands);
+    }
+  const nFilas = 4;
+  const criterio: 'dixon' | 'grubbs' = op.promediables === 'todos' || r() < 0.7 ? 'dixon' : 'grubbs';
+  // con "incluyó un valor no promediable" tiene que haber uno que el criterio descarte
+  const atipico = op.promediables === 'todos' || r() < 0.4 ? Math.floor(r() * nFilas) : -1;
+  // lecturas con ruido (±0,03 mL), redondeadas a 0,01 mL; se repite hasta que el criterio
+  // descarte justo el valor alejado (o ninguno) y haya dispersión entre los demás
+  let G: number[] = [];
+  for (let intento = 0; intento < 200; intento++) {
+    G = Array.from({ length: nFilas }, (_, i) => {
+      let g = Gc - corr(Gc) + (r() - 0.5) * 0.06;
+      if (i === atipico) g += (r() < 0.5 ? -1 : 1) * (0.3 + r() * 0.15);
+      return Math.round(g * 100) / 100;
+    });
+    const mk = promediablesPorCriterio(G, criterio).mascara;
+    const esperado = G.map((_, i) => i !== atipico);
+    const resto = G.filter((_, i) => i !== atipico);
+    if (mk.every((v, i) => v === esperado[i]) && new Set(resto).size >= 3) break;
+  }
+  const e = base('p3', n, nombre, r() < 0.5 ? 'G1' : 'G2');
+  e.id = `ej-p3-${n}-${Math.floor(r() * 1e9).toString(36)}`;
+  e.materiales.bureta = material(aj, bureta.codigo, '0,02');
+  e.materiales.matraz = material(aj, matraz.codigo, '0,10');
+  e.materiales.pipeta = material(aj, pipeta.codigo, '0,02');
+  e.reactivos.patron = reactivo(dec(assay, 1), `OX-2025-${100 + Math.floor(r() * 900)}`);
+  e.reactivos.titulante = reactivo('', `NaOH-${String(1 + Math.floor(r() * 12)).padStart(2, '0')}26`);
+  e.muestra = 'NaOH ≈ 0,1 mol/L';
+  e.datos.m = dec(m, 4);
+  e.criterio = { tipo: criterio, texto: '' };
+  e.filas = G.map((g) => fila({ G: dec(g, 2) }));
+  // marcar promediables según el criterio declarado (con los valores bien calculados)
+  const c = p.calcular(e, aj);
+  e.filas.forEach((f, i) => (f.promediable = op.promediables === 'todos' ? true : c.mascaraCriterio ? c.mascaraCriterio[i] : true));
+  return rellenarResultados(p, e, aj, op);
 }
 
-export function generarEjemplos(aj: Ajustes): Entrega[] {
-  return [...ejemplosP1(aj), ...ejemplosP2(aj), ...ejemplosP3(aj)];
+function ejemplosP3(aj: Ajustes, seed: number): Entrega[] {
+  const r = rng(seed);
+  const errores: Partial<Opciones>[] = [{ volumen: 'nominal' }, { bureta: 'superior' }, { alicuota: 'sin' }, { relacion: 'uno' }, { promediables: 'todos' }, { t: 'z' }, { bureta: 'sin' }];
+  // 1 correcto + 3 con errores distintos elegidos al azar
+  const elegidos: Partial<Opciones>[] = [];
+  while (elegidos.length < 3) {
+    const x = errores[Math.floor(r() * errores.length)];
+    if (!elegidos.includes(x)) elegidos.push(x);
+  }
+  return [{}, ...elegidos].map((op, i) => entregaP3Aleatoria(aj, r, NOMBRES[i], op, i + 1));
+}
+
+/** `semilla` fija = siempre los mismos ejemplos (pruebas); la interfaz pasa una al azar para P3. */
+export { rng };
+
+export function generarEjemplos(aj: Ajustes, semilla = 7): Entrega[] {
+  return [...ejemplosP1(aj), ...ejemplosP2(aj), ...ejemplosP3(aj, semilla)];
 }

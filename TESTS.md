@@ -192,10 +192,11 @@ Datos: ejemplo de fluorescencia de Miller & Miller (x = 0, 2, …, 12; verificad
 | a) Lineal y = mx + b | m = 1,93036; b = 1,51786 | 0,997760 | 0,997312 | 0,43285 |
 | b) Por el origen y = mx | m = 2,10549 | 0,985897 (centrado) | 0,985897 | 0,99155 |
 | c) Cuadrático | a = 0,013988; b = 1,76250; c = 1,79762 | 0,998389 | 0,997584 | 0,41043 |
-| d) Ponderado 1/x² (sin x = 0) | m = 1,98673; b = 1,02079 | 0,999240 (ponderado, = statsmodels WLS) | 0,999049 | 0,15450 (pesos normalizados) |
+| d) Cuadrático sin ordenada y = ax² + bx | a = −0,021122; b = 2,31021 | 0,988249 (centrado) | 0,985899 | 0,99147 |
 
-Coinciden con 11–12 decimales. Además:
-- Para comparar los modelos se usa una base común: R² y R² ajustado con los residuos sin ponderar de todos los estándares (en los tres no ponderados coincide con su R²).
+Coinciden con 11–12 decimales (el modelo ponderado 1/x² se quitó a pedido del docente). Además:
+- R² centrado en los cuatro modelos (también en los sin ordenada) para que sean comparables.
+- **Corrección por blanco**: se promedian las señales con x = 0, se restan a todas las señales y los blancos quedan como un único (0; 0). Con los datos corregidos (y − 2,1) el lineal conserva la pendiente (1,93036) y su ordenada baja a −0,58214; el cuadrático sin ordenada da a = 0,019894, b = 1,67037, R² = 0,998102 y s_y/x = 0,39845 (numpy). Sin puntos con x = 0 no se modifica nada.
 - Concentración de una señal con cada modelo: ida y vuelta exacta.
 - Patrón de residuos: una forma de U se detecta; residuos al azar no.
 - Mejor modelo: con datos curvos se elige el cuadrático; con los datos lineales de libro se elige el lineal (el cuadrático mejora el R² ajustado en menos de 0,0005, y ante esa diferencia se prefiere el modelo más simple).

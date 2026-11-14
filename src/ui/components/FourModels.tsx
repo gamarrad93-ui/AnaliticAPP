@@ -16,16 +16,17 @@ const MODEL_COLORS: Record<FourId, { light: string; dark: string }> = {
   lineal: { light: '#0072B2', dark: '#56B4E9' },
   origen: { light: '#D55E00', dark: '#FF8C42' },
   cuadratico: { light: '#009E73', dark: '#2EC4A0' },
-  ponderado: { light: '#CC79A7', dark: '#E39BC5' },
+  cuadratico0: { light: '#CC79A7', dark: '#E39BC5' },
 };
 
-const LETTER: Record<FourId, string> = { lineal: 'a', origen: 'b', cuadratico: 'c', ponderado: 'd' };
+const LETTER: Record<FourId, string> = { lineal: 'a', origen: 'b', cuadratico: 'c', cuadratico0: 'd' };
 
 /** Ecuación con coma decimal. */
 export function fourEquation(f: FourFit): string {
   const s = (v: number, d = 4) => fmtSig(v, d);
   const term = (v: number, txt: string) => (v < 0 ? ` − ${s(-v)}${txt}` : ` + ${s(v)}${txt}`);
   if (f.id === 'cuadratico') return `y = ${s(f.a)}x²${term(f.m, 'x')}${term(f.b, '')}`;
+  if (f.id === 'cuadratico0') return `y = ${s(f.a)}x²${term(f.m, 'x')}`;
   if (f.id === 'origen') return `y = ${s(f.m)}x`;
   return `y = ${s(f.m)}x${term(f.b, '')}`;
 }
@@ -44,7 +45,7 @@ export function FourModelsSection(props: { x: number[]; y: number[]; xLabel: str
   const curves = useMemo(() => {
     const out: Record<string, { x: number; fit: number }[]> = {};
     for (const f of fits) {
-      const x0 = f.id === 'ponderado' ? Math.min(...x.filter((v) => v !== 0)) * 0.5 : xmin;
+      const x0 = xmin;
       out[f.id] = Array.from({ length: 61 }, (_, i) => {
         const xv = x0 + ((xmax * 1.03 - x0) * i) / 60;
         return { x: xv, fit: predict(f, xv) };
@@ -63,8 +64,8 @@ export function FourModelsSection(props: { x: number[]; y: number[]; xLabel: str
   const csv = () =>
     exportCsv(
       [
-        ['Modelo', 'Ecuación', 'a (x²)', 'm (x)', 'b (ordenada)', 'R² (base común)', 'R² ajustado (base común)', 'R² propio del ajuste', 's_y/x', 'n usados', 'x desconocida'],
-        ...fits.map((f) => [FOUR_LABELS[f.id], fourEquation(f), f.a, f.m, f.b, f.r2Common, f.r2adjCommon, f.r2, f.syx, f.n, unknown(f) ?? '']),
+        ['Modelo', 'Ecuación', 'a (x²)', 'm (x)', 'b (ordenada)', 'R²', 'R² ajustado', 's_y/x', 'n', 'x desconocida'],
+        ...fits.map((f) => [FOUR_LABELS[f.id], fourEquation(f), f.a, f.m, f.b, f.r2Common, f.r2adjCommon, f.syx, f.n, unknown(f) ?? '']),
         [],
         [props.xLabel, props.yLabel, ...fits.map((f) => `ŷ ${FOUR_LABELS[f.id]}`), ...fits.map((f) => `residuo ${FOUR_LABELS[f.id]}`)],
         ...x.map((xi, i) => [xi, y[i], ...fits.map((f) => predict(f, xi)), ...fits.map((f) => f.residuals[i])]),
@@ -102,7 +103,6 @@ export function FourModelsSection(props: { x: number[]; y: number[]; xLabel: str
                     <YAxis type="number" tickFormatter={fmtTick} tick={{ fontSize: th.fontSize - 1, fill: th.axis }} stroke={th.axis} width={48} />
                     <Line data={curves[f.id]} dataKey="fit" stroke={color(f.id)} strokeWidth={th.strokeWidth} dot={false} isAnimationActive={false} name="Ajuste" />
                     <Scatter data={pts.filter((_, i) => f.used[i])} dataKey="y" fill={th.text} isAnimationActive={false} name="Estándares" />
-                    {f.excludedZero > 0 && <Scatter data={pts.filter((_, i) => !f.used[i])} dataKey="y" fill={th.bg} stroke={th.muted} strokeWidth={2} isAnimationActive={false} name="Excluidos (x = 0)" />}
                     <Tooltip formatter={(v: number) => fmtSig(v, 4)} labelFormatter={(v: number) => `x = ${fmtSig(v, 4)}`} contentStyle={{ background: th.bg, borderColor: th.grid, color: th.text, fontSize: th.fontSize }} />
                   </ComposedChart>
                 </ResponsiveContainer>
@@ -111,14 +111,8 @@ export function FourModelsSection(props: { x: number[]; y: number[]; xLabel: str
                   <div className="flex flex-wrap gap-x-4 font-mono text-xs text-slate-600 dark:text-slate-300">
                     <span>R² = {fmtFixed(f.r2Common, 5)}</span>
                     <span>R² aj. = {fmtFixed(f.r2adjCommon, 5)}</span>
-                    {f.id === 'ponderado' && <span>R² ponderado = {fmtFixed(f.r2, 5)}</span>}
-                    <span>s_y/x = {fmtSig(f.syx, 3)}{f.id === 'ponderado' ? ' (ponderado)' : ''}</span>
+                    <span>s_y/x = {fmtSig(f.syx, 3)}</span>
                   </div>
-                  {f.excludedZero > 0 && (
-                    <p className="text-xs text-amber-700 dark:text-amber-300">
-                      Se omite{f.excludedZero > 1 ? 'n' : ''} {f.excludedZero} punto{f.excludedZero > 1 ? 's' : ''} con x = 0 (peso 1/x² infinito); se muestra{f.excludedZero > 1 ? 'n' : ''} como círculo hueco.
-                    </p>
-                  )}
                 </div>
               </ChartCard>
             </div>
@@ -147,7 +141,7 @@ export function FourModelsSection(props: { x: number[]; y: number[]; xLabel: str
                   <td className="whitespace-nowrap font-mono">{fourEquation(f)}</td>
                   <td className="font-mono">{fmtFixed(f.r2Common, 5)}</td>
                   <td className="font-mono">{fmtFixed(f.r2adjCommon, 5)}</td>
-                  <td className="font-mono">{fmtSig(f.syx, 3)}{f.id === 'ponderado' ? '*' : ''}</td>
+                  <td className="font-mono">{fmtSig(f.syx, 3)}</td>
                   <td className="font-mono">{props.y0 == null ? '—' : u == null ? 'fuera de rango' : fmtSig(u, 4)}</td>
                   <td className={`min-w-[11rem] ${f.pattern.flagged ? 'text-amber-700 dark:text-amber-300' : ''}`}>
                     {f.pattern.flagged ? `⚠ ${f.pattern.text.replace('patrón en los residuos: ', '')}` : `✓ al azar (${f.pattern.runs} rachas)`}
@@ -159,8 +153,8 @@ export function FourModelsSection(props: { x: number[]; y: number[]; xLabel: str
         </table>
         {best && <Alert kind="ok"><strong>Mejor modelo: {FOUR_LABELS[best.id]}.</strong> {best.reason}</Alert>}
         <p className="text-xs text-slate-600 dark:text-slate-400">
-          Para comparar, el R² y el R² ajustado de los cuatro modelos se calculan igual: 1 − SSres/SStot con los residuos sin ponderar (y medida − y ajustada) de todos los estándares; R² ajustado = 1 − (1 − R²)(n − 1)/(n − p), con p = número de parámetros. El R² ponderado propio del modelo d) se muestra en su gráfico.
-          *s_y/x del ponderado con pesos normalizados (Σw = n). La concentración de la desconocida usa el promedio de las señales ingresadas.
+          R² centrado (1 − SSres/SStot) en los cuatro modelos, también en los que no tienen ordenada, para que sean comparables. R² ajustado = 1 − (1 − R²)(n − 1)/(n − p), con p = número de parámetros.
+          La concentración de la desconocida usa el promedio de las señales ingresadas.
         </p>
       </section>
 
@@ -186,7 +180,6 @@ export function FourModelsSection(props: { x: number[]; y: number[]; xLabel: str
         </ResponsiveContainer>
         <p className="text-xs text-slate-600 dark:text-slate-400">
           Para cada estándar, una barra por modelo. Un buen modelo tiene residuos chicos que cambian de signo al azar; si un modelo da barras positivas en los extremos y negativas en el medio (o al revés), no describe bien la curvatura.
-          {fits.some((f) => f.excludedZero > 0) && ' En el ponderado, el residuo en x = 0 corresponde a un punto excluido del ajuste.'}
         </p>
       </ChartCard>
     </>

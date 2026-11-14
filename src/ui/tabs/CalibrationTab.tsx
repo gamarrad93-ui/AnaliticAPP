@@ -9,7 +9,8 @@ import { parseList } from '../../chem/numeric/table';
 import { FourModelsSection } from '../components/FourModels';
 import { fmtFixed, fmtSig, fmtTick, niceTicks, texNum } from '../../chem/numeric/format';
 import { formatWithUncertainty } from '../../chem/stats/sigfigs';
-import { Alert, NumField, Segmented, Stat } from '../components/fields';
+import { Alert, NumField, Segmented, Stat, Toggle } from '../components/fields';
+import { blankCorrect } from '../../chem/stats/blank';
 import { ChartCard } from '../components/ChartCard';
 import { Procedure, type Step } from '../components/Procedure';
 import { checkNum, useNum } from '../hooks';
@@ -58,6 +59,8 @@ export default function CalibrationTab() {
   const [conf, setConf] = useState<Conf>('0.95');
   const dil = useNum('1');
   const [y0raw, setY0raw] = useState('13,5');
+  // corrección por blanco: se resta la señal promedio de los puntos con x = 0
+  const [blankCorr, setBlankCorr] = useState(false);
   const dilErr = mode === 'sa' ? checkNum(dil.value, dil.raw, { positive: true }) : null;
 
   const dGrid = useDeferredValue(grid);
@@ -67,22 +70,33 @@ export default function CalibrationTab() {
   const unit = xUnit || (xLabel.match(/\(([^)]+)\)/)?.[1] ?? '');
 
   const fit = useMemo(() => {
-    const x = table.rows.map((r) => r[0]);
-    const y = table.rows.map((r) => r[1]);
-    type Fit = { error: string } | { x: number[]; y: number[]; reg: Regression };
+    const x0 = table.rows.map((r) => r[0]);
+    const y0 = table.rows.map((r) => r[1]);
+    // con la casilla marcada (sólo en curva de calibración) los modelos se ajustan a los datos corregidos
+    const bc = mode === 'cal' && blankCorr ? blankCorrect(x0, y0) : null;
+    const x = bc ? bc.x : x0;
+    const y = bc ? bc.y : y0;
+    const blank = bc?.blank ?? null;
+    const nBlank = bc?.nBlank ?? 0;
+    type Fit = { error: string } | { x: number[]; y: number[]; reg: Regression; blank: number | null; nBlank: number };
     if (x.length < 3) return { error: 'Ingresá al menos 3 pares (x, y). Podés pegar dos columnas desde Excel o Google Sheets.' } as Fit;
     try {
-      return { x, y, reg: linearRegression(x, y) } as Fit;
+      return { x, y, reg: linearRegression(x, y), blank, nBlank } as Fit;
     } catch (e) {
       return { error: (e as Error).message } as Fit;
     }
-  }, [table]);
+  }, [table, mode, blankCorr]);
+  const blank = 'reg' in fit ? fit.blank : null;
+  const blankApplied = mode === 'cal' && blankCorr && blank != null;
+  const yLabelFit = blankApplied ? `${yLabel} − blanco` : yLabel;
 
   const confidence = Number(conf);
   const reg = 'reg' in fit ? fit.reg : null;
   const sa = reg && mode === 'sa' ? standardAddition(reg, confidence) : null;
   const y0list = parseList(y0raw);
-  const y0mean = y0list.values.length && !y0list.bad.length ? y0list.values.reduce((a, b) => a + b, 0) / y0list.values.length : null;
+  const y0raw_mean = y0list.values.length && !y0list.bad.length ? y0list.values.reduce((a, b) => a + b, 0) / y0list.values.length : null;
+  // a la señal de la muestra también se le resta el blanco
+  const y0mean = y0raw_mean != null && blankApplied ? y0raw_mean - blank! : y0raw_mean;
   const lim = reg && mode === 'cal' ? detectionLimits(reg) : null;
   const pred = reg && mode === 'cal' && y0mean != null ? inversePrediction(reg, y0mean, y0list.values.length, confidence) : null;
 
@@ -109,7 +123,13 @@ export default function CalibrationTab() {
     if (pred && lim && pred.x0 < lim.loq) warnings.push(`La concentración de la desconocida está por debajo del LOQ (${fmtSig(lim.loq, 3)}): se detecta pero no se cuantifica con buena precisión.`);
   }
 
-  const steps = reg ? buildSteps(reg, sa, mode, lim, pred, confidence) : [];
+  const steps: Step[] = reg ? buildSteps(reg, sa, mode, lim, pred, confidence) : [];
+  if (blankApplied && 'reg' in fit)
+    steps.unshift({
+      title: 'Corrección por blanco',
+      text: `Se promediaron ${fit.nBlank} lectura(s) del blanco y se restó ese valor a todas las señales (estándares y muestra). Los blancos quedan como el punto (0; 0).`,
+      tex: `\\bar y_{blanco} = ${texNum(blank!, 5)},\\qquad y_i' = y_i - \\bar y_{blanco}`,
+    });
 
   return (
     <div className="space-y-4">
@@ -123,10 +143,40 @@ export default function CalibrationTab() {
             </p>
             <DataGrid value={grid} onChange={setGrid} />
             {table.invalid.length > 0 && <Alert kind="warn">Fila(s) {table.invalid.join(', ')}: hay un valor que no es un número (se ignora{table.invalid.length > 1 ? 'n' : ''}).</Alert>}
+            {mode === 'cal' && (
+              <div className="space-y-2 rounded-lg border border-slate-200 p-2 dark:border-slate-700">
+                <Toggle label={<strong>Corrección por blanco</strong>} checked={blankCorr} onChange={setBlankCorr} />
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Se promedian las señales de los puntos con concentración 0 (blancos), ese valor se resta a todas las señales (también a la muestra) y los blancos quedan como un único punto (0; 0). Los cuatro modelos se ajustan a los datos corregidos.
+                </p>
+                {blankCorr && blank != null && 'reg' in fit && (
+                  <Alert kind="info">Blanco = <strong className="font-mono">{fmtSig(blank, 4)}</strong> (promedio de {fit.nBlank} lectura{fit.nBlank > 1 ? 's' : ''}); se restó a todas las señales.</Alert>
+                )}
+                {blankCorr && blank == null && 'reg' in fit && <Alert kind="warn">No hay ningún punto con concentración 0: no se puede corregir por blanco. Agregá el blanco a la tabla.</Alert>}
+              </div>
+            )}
             {table.incomplete.length > 0 && <Alert kind="warn">Fila(s) {table.incomplete.join(', ')}: falta completar x o y (se ignora{table.incomplete.length > 1 ? 'n' : ''}).</Alert>}
             <div className="flex flex-wrap gap-2">
-              <button className="btn" onClick={() => setGrid(gridFromText(mode === 'cal' ? EXAMPLE_CAL : EXAMPLE_SA))}>Cargar ejemplo</button>
-              {mode === 'cal' && <button className="btn" onClick={() => setGrid(gridFromText(EXAMPLE_CR))}>Ejemplo: Cr por absorción atómica</button>}
+              <button
+                className="btn"
+                onClick={() => {
+                  setGrid(gridFromText(mode === 'cal' ? EXAMPLE_CAL : EXAMPLE_SA));
+                  if (mode === 'cal') setY0raw('13,5');
+                }}
+              >
+                Cargar ejemplo
+              </button>
+              {mode === 'cal' && (
+                <button
+                  className="btn"
+                  onClick={() => {
+                    setGrid(gridFromText(EXAMPLE_CR));
+                    setY0raw('0,5159; 0,5201; 0,5099'); // absorbancias de la muestra del ejercicio
+                  }}
+                >
+                  Ejemplo: Cr por absorción atómica
+                </button>
+              )}
               <button className="btn" onClick={() => setGrid(emptyGrid())}>Vaciar tabla</button>
             </div>
             <NumField label="Unidad de concentración (opcional)" value={xUnit} onChange={setXUnit} placeholder={unit || 'mg/L'} />
@@ -145,6 +195,7 @@ export default function CalibrationTab() {
                 error={y0list.bad.length ? `No se pudo leer: ${y0list.bad.join(', ')}` : null}
                 hint="Para varias réplicas separá con punto y coma: 13,5; 13,4; 13,6. Dejalo vacío si no hay muestra."
               />
+              {blankApplied && y0raw_mean != null && <p className="text-sm">Señal corregida: {fmtSig(y0raw_mean, 4)} − {fmtSig(blank!, 4)} = <strong className="font-mono">{fmtSig(y0mean!, 4)}</strong></p>}
             </section>
           )}
           {mode === 'sa' && (
@@ -195,11 +246,12 @@ export default function CalibrationTab() {
                   x={fit.x}
                   y={fit.y}
                   xLabel={xLabel}
-                  yLabel={yLabel}
+                  yLabel={yLabelFit}
                   y0={y0mean}
                   unit={unit}
                   extraCsvRows={[
                     [],
+                    ['Corrección por blanco', blankApplied ? `sí (blanco = ${blank})` : 'no'],
                     ['Modelo lineal: s_y/x', reg.syx],
                     ['LOD (3,3·s/b)', lim?.lod ?? ''],
                     ['LOQ (10·s/b)', lim?.loq ?? ''],

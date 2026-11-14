@@ -3,30 +3,29 @@
  *   a) lineal:                 y = m·x + b
  *   b) lineal por el origen:   y = m·x
  *   c) cuadrático:             y = a·x² + m·x + b
- *   d) lineal ponderado 1/x²:  y = m·x + b, pesos wᵢ = 1/xᵢ² (se omiten los x = 0)
+ *   d) cuadrático sin ordenada: y = a·x² + m·x
  *
- * R² centrado en todos (1 − SSres/SStot), para que sean comparables entre sí; en el ponderado,
- * R² ponderado (como statsmodels WLS). R² ajustado = 1 − (1 − R²)(n − 1)/(n − p).
- * s_y/x = √(SSres/(n − p)); en el ponderado, con pesos normalizados (Σw = n).
+ * R² centrado en todos (1 − SSres/SStot), para que sean comparables entre sí (también en los
+ * modelos sin ordenada). R² ajustado = 1 − (1 − R²)(n − 1)/(n − p). s_y/x = √(SSres/(n − p)).
  */
 import { fitModel } from './calibrationModels';
 
-export type FourId = 'lineal' | 'origen' | 'cuadratico' | 'ponderado';
+export type FourId = 'lineal' | 'origen' | 'cuadratico' | 'cuadratico0';
 
-export const FOUR_ORDER: FourId[] = ['lineal', 'origen', 'cuadratico', 'ponderado'];
+export const FOUR_ORDER: FourId[] = ['lineal', 'origen', 'cuadratico', 'cuadratico0'];
 
 export const FOUR_LABELS: Record<FourId, string> = {
   lineal: 'Lineal',
   origen: 'Lineal por el origen',
   cuadratico: 'Cuadrático',
-  ponderado: 'Lineal ponderado (1/x²)',
+  cuadratico0: 'Cuadrático sin ordenada',
 };
 
 export const FOUR_FORMS: Record<FourId, string> = {
   lineal: 'y = mx + b',
   origen: 'y = mx',
   cuadratico: 'y = ax² + bx + c',
-  ponderado: 'y = mx + b (pesos 1/x²)',
+  cuadratico0: 'y = ax² + bx',
 };
 
 export interface ResidualPattern {
@@ -47,20 +46,16 @@ export interface FourFit {
   p: number;
   n: number;
   used: boolean[];
-  /** R² del propio ajuste (en el ponderado, R² ponderado) */
+  /** R² centrado del ajuste */
   r2: number;
   r2adj: number;
-  /**
-   * R² y R² ajustado en base común: residuos sin ponderar (y − ŷ) en TODOS los puntos.
-   * Es lo que se usa para comparar los cuatro modelos entre sí.
-   */
+  /** R² y R² ajustado sobre los residuos (y − ŷ) de todos los puntos: base de comparación */
   r2Common: number;
   r2adjCommon: number;
   syx: number;
   /** residuos y − ŷ para TODOS los puntos (también los excluidos del ajuste) */
   residuals: number[];
   pattern: ResidualPattern;
-  excludedZero: number;
 }
 
 export const predict = (f: FourFit, x: number) => f.a * x * x + f.m * x + f.b;
@@ -108,7 +103,7 @@ export function residualPattern(x: number[], r: number[]): ResidualPattern {
   };
 }
 
-function finish(id: FourId, x: number[], y: number[], a: number, m: number, b: number, p: number, used: boolean[], r2: number, syx: number, excludedZero = 0): FourFit {
+function finish(id: FourId, x: number[], y: number[], a: number, m: number, b: number, p: number, used: boolean[], r2: number, syx: number): FourFit {
   const n = used.filter(Boolean).length;
   const residuals = x.map((xi, i) => y[i] - (a * xi * xi + m * xi + b));
   const N = x.length;
@@ -130,7 +125,6 @@ function finish(id: FourId, x: number[], y: number[], a: number, m: number, b: n
     residuals,
     // patrón con los residuos sin ponderar de todos los puntos (los mismos del gráfico de barras)
     pattern: residualPattern(x, residuals),
-    excludedZero,
   };
 }
 
@@ -165,35 +159,17 @@ export function fitQuadratic(x: number[], y: number[]): FourFit {
   return finish('cuadratico', x, y, f.c, f.b, f.a, 3, x.map(() => true), centeredR2(y, yh), Math.sqrt(ss / (x.length - 3)));
 }
 
-/** Mínimos cuadrados ponderados con wᵢ = 1/xᵢ² (x = 0 se omite). */
-export function fitWeighted(x: number[], y: number[]): FourFit {
-  const used = x.map((xi) => xi !== 0);
-  const xs = x.filter((_, i) => used[i]);
-  const ys = y.filter((_, i) => used[i]);
-  const n = xs.length;
-  if (n < 3) throw new Error('El ajuste ponderado necesita al menos 3 puntos con x ≠ 0.');
-  const raw = xs.map((xi) => 1 / (xi * xi));
-  const sw = raw.reduce((s, v) => s + v, 0);
-  const w = raw.map((v) => (v * n) / sw); // normalizados: Σw = n
-  const xw = xs.reduce((s, xi, i) => s + w[i] * xi, 0) / n;
-  const yw = ys.reduce((s, yi, i) => s + w[i] * yi, 0) / n;
-  let sxy = 0;
-  let sxx = 0;
-  for (let i = 0; i < n; i++) {
-    sxy += w[i] * (xs[i] - xw) * (ys[i] - yw);
-    sxx += w[i] * (xs[i] - xw) ** 2;
-  }
-  const m = sxy / sxx;
-  const b = yw - m * xw;
-  const r = ys.map((yi, i) => yi - (m * xs[i] + b));
-  const ssw = r.reduce((s, ri, i) => s + w[i] * ri * ri, 0);
-  const stw = ys.reduce((s, yi, i) => s + w[i] * (yi - yw) ** 2, 0);
-  return finish('ponderado', x, y, 0, m, b, 2, used, 1 - ssw / stw, Math.sqrt(ssw / (n - 2)), x.length - n);
+/** Cuadrático sin ordenada: y = a·x² + m·x (mínimos cuadrados con columnas x y x²). */
+export function fitQuadraticOrigin(x: number[], y: number[]): FourFit {
+  const f = fitModel(x, y, 'quad0');
+  const yh = x.map((xi) => f.b * xi + f.c * xi * xi);
+  const ss = y.reduce((s, v, i) => s + (v - yh[i]) ** 2, 0);
+  return finish('cuadratico0', x, y, f.c, f.b, 0, 2, x.map(() => true), centeredR2(y, yh), Math.sqrt(ss / (x.length - 2)));
 }
 
 export function fitFour(x: number[], y: number[]): FourFit[] {
   const out: FourFit[] = [];
-  for (const f of [fitLinear, fitOrigin, fitQuadratic, fitWeighted]) {
+  for (const f of [fitLinear, fitOrigin, fitQuadratic, fitQuadraticOrigin]) {
     try {
       out.push(f(x, y));
     } catch {
@@ -242,6 +218,6 @@ export function chooseBest(fits: FourFit[]): { id: FourId; reason: string } | nu
   reason += ` Sus residuos: ${best.pattern.text}.`;
   const discarded = fits.filter((f) => f.pattern.flagged).map((f) => `${FOUR_LABELS[f.id]} (${f.pattern.text})`);
   if (discarded.length && clean.length) reason += ` Se descartan: ${discarded.join('; ')}.`;
-  reason += ' El R² ajustado penaliza los parámetros extra, y todos los R² se comparan con los residuos sin ponderar de todos los estándares.';
+  reason += ' El R² ajustado penaliza los parámetros extra (por eso un cuadrático sólo gana si mejora el ajuste más de lo que cuesta su parámetro adicional).';
   return { id: best.id, reason };
 }

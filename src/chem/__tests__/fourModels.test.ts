@@ -1,9 +1,9 @@
 /**
- * Cuatro modelos de calibración. Referencias: numpy.polyfit y statsmodels (OLS, WLS)
+ * Cuatro modelos de calibración. Referencias: numpy.polyfit, numpy.linalg.lstsq y statsmodels (OLS)
  * sobre el ejemplo de fluorescencia de Miller & Miller (verificado a mano).
  */
 import { describe, it, expect } from 'vitest';
-import { fitLinear, fitOrigin, fitQuadratic, fitWeighted, fitFour, inverseFour, chooseBest, residualPattern } from '../stats/fourModels';
+import { fitLinear, fitOrigin, fitQuadratic, fitQuadraticOrigin, fitFour, inverseFour, chooseBest, residualPattern } from '../stats/fourModels';
 
 const x = [0, 2, 4, 6, 8, 10, 12];
 const y = [2.1, 5.0, 9.0, 12.6, 17.3, 21.0, 24.7];
@@ -34,33 +34,35 @@ describe('Cuatro modelos de calibración (referencia numpy/statsmodels)', () => 
     expect(f.r2adj).toBeCloseTo(0.9975836418530308, 12);
     expect(f.syx).toBeCloseTo(0.41042950789676624, 12);
   });
-  it('d) ponderado 1/x² (sin x = 0): igual a statsmodels WLS', () => {
-    const f = fitWeighted(x, y);
-    expect(f.excludedZero).toBe(1);
-    expect(f.n).toBe(6);
-    expect(f.b).toBeCloseTo(1.02079208, 7);
-    expect(f.m).toBeCloseTo(1.98672717, 7);
-    expect(f.r2).toBeCloseTo(0.9992395054897212, 12);
-    expect(f.r2adj).toBeCloseTo(0.9990493818621515, 12);
-    expect(f.syx).toBeCloseTo(0.15450419783055996, 12);
-    expect(f.residuals[0]).toBeCloseTo(1.0792079207920837, 10);
-    expect(f.residuals[3]).toBeCloseTo(-0.3411551155115511, 10);
+  it('d) cuadrático sin ordenada (referencia numpy.linalg.lstsq)', () => {
+    const f = fitQuadraticOrigin(x, y);
+    expect(f.a).toBeCloseTo(-0.021121651785714565, 11);
+    expect(f.m).toBeCloseTo(2.310212053571431, 11);
+    expect(f.b).toBe(0);
+    expect(f.r2).toBeCloseTo(0.9882493378495608, 12);
+    expect(f.r2adj).toBeCloseTo(0.985899205419473, 12);
+    expect(f.syx).toBeCloseTo(0.9914703186970062, 12);
   });
-  it('base común: en los no ponderados coincide con su R²; en el ponderado usa todos los puntos', () => {
-    const fs = fitFour(x, y);
-    for (const f of fs.filter((f) => f.id !== 'ponderado')) expect(f.r2Common).toBeCloseTo(f.r2, 12);
-    const w = fs.find((f) => f.id === 'ponderado')!;
-    const ym = y.reduce((s, v) => s + v, 0) / y.length;
-    const ss = w.residuals.reduce((s, r) => s + r * r, 0);
-    expect(w.r2Common).toBeCloseTo(1 - ss / y.reduce((s, v) => s + (v - ym) ** 2, 0), 12);
-    expect(w.r2Common).toBeLessThan(w.r2); // el blanco excluido empeora el ajuste en base común
+  it('base común: el R² de comparación es el R² centrado de cada modelo', () => {
+    for (const f of fitFour(x, y)) expect(f.r2Common).toBeCloseTo(f.r2, 12);
+  });
+  it('con corrección por blanco (y − 2,1): lineal y cuadrático sin ordenada (numpy)', () => {
+    const yc = y.map((v) => v - 2.1);
+    const l = fitLinear(x, yc);
+    expect(l.m).toBeCloseTo(1.9303571428571427, 12);
+    expect(l.b).toBeCloseTo(-0.5821428571428562, 12);
+    const q = fitQuadraticOrigin(x, yc);
+    expect(q.a).toBeCloseTo(0.01989397321428561, 11);
+    expect(q.m).toBeCloseTo(1.6703683035714294, 11);
+    expect(q.r2).toBeCloseTo(0.9981021876152679, 12);
+    expect(q.syx).toBeCloseTo(0.3984512427601946, 12);
   });
   it('datos lineales de libro: se elige el lineal (el cuadrático no mejora lo suficiente)', () => {
     expect(chooseBest(fitFour(x, y))!.id).toBe('lineal');
   });
   it('los residuos del lineal suman 0 y fitFour devuelve los 4', () => {
     expect(Math.abs(fitLinear(x, y).residuals.reduce((a, b) => a + b, 0))).toBeLessThan(1e-12);
-    expect(fitFour(x, y).map((f) => f.id)).toEqual(['lineal', 'origen', 'cuadratico', 'ponderado']);
+    expect(fitFour(x, y).map((f) => f.id)).toEqual(['lineal', 'origen', 'cuadratico', 'cuadratico0']);
   });
   it('concentración de una señal con cada modelo (ida y vuelta)', () => {
     for (const f of fitFour(x, y)) {
@@ -80,5 +82,30 @@ describe('Cuatro modelos de calibración (referencia numpy/statsmodels)', () => 
     const best = chooseBest(fitFour(xc, yc))!;
     expect(best.id).toBe('cuadratico');
     expect(best.reason).toMatch(/R² ajustado/);
+  });
+});
+
+import { blankCorrect } from '../stats/blank';
+describe('Corrección por blanco', () => {
+  it('resta la señal del blanco y deja un único (0; 0)', () => {
+    const r = blankCorrect([0, 0, 2, 4], [0.02, 0.04, 0.23, 0.43]);
+    expect(r.blank).toBeCloseTo(0.03, 12);
+    expect(r.nBlank).toBe(2);
+    expect(r.x).toEqual([0, 2, 4]);
+    expect(r.y[0]).toBe(0);
+    expect(r.y[1]).toBeCloseTo(0.2, 12);
+    expect(r.y[2]).toBeCloseTo(0.4, 12);
+  });
+  it('sin blanco (ningún x = 0) no cambia los datos', () => {
+    const r = blankCorrect([1, 2], [3, 4]);
+    expect(r.blank).toBeNull();
+    expect(r.y).toEqual([3, 4]);
+  });
+  it('la pendiente del lineal no cambia; la ordenada baja en el valor del blanco', () => {
+    const r = blankCorrect(x, y);
+    const a = fitLinear(x, y);
+    const b = fitLinear(r.x, r.y);
+    expect(b.m).toBeCloseTo(a.m, 12);
+    expect(b.b).toBeCloseTo(a.b - 2.1, 12);
   });
 });

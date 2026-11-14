@@ -12,6 +12,8 @@ const StatsTab = lazy(() => import('./ui/tabs/StatsTab'));
 const RedoxTab = lazy(() => import('./ui/tabs/RedoxTab'));
 const ComplexTab = lazy(() => import('./ui/tabs/ComplexTab'));
 const SolubilityTab = lazy(() => import('./ui/tabs/SolubilityTab'));
+const GravimetryTab = lazy(() => import('./ui/tabs/GravimetryTab'));
+const HumidityTab = lazy(() => import('./ui/tabs/HumidityTab'));
 const AboutTab = lazy(() => import('./ui/tabs/AboutTab'));
 
 const TABS = [
@@ -24,6 +26,8 @@ const TABS = [
   { id: 'redox', label: 'Redox', icon: '⚡', C: RedoxTab },
   { id: 'complejos', label: 'EDTA y precipitación', icon: '🔗', C: ComplexTab },
   { id: 'solubilidad', label: 'Solubilidad', icon: '🧂', C: SolubilityTab },
+  { id: 'gravimetria', label: 'Gravimetría', icon: '⚖️', C: GravimetryTab },
+  { id: 'humedad', label: 'Humedad y base seca', icon: '💧', C: HumidityTab },
   { id: 'acerca', label: 'Acerca de', icon: 'ℹ️', C: AboutTab },
 ] as const;
 

@@ -104,6 +104,21 @@ export default function AboutTab() {
         </p>
       </Sec>
 
+      <Sec title="Gravimetría">
+        <p>
+          Masa molar con los pesos atómicos estándar abreviados de IUPAC. El lector de fórmulas acepta paréntesis y corchetes, hidratos con "·" o "." y cargas (que se ignoran).
+          Factor gravimétrico F = a·M(buscada)/(b·M(pesada)): a y b se obtienen igualando los átomos del elemento común (sin contar O ni H, salvo que sean el único), y se pueden corregir a mano.
+          % m/m = m(precipitado)·F·f(alícuota)/m(muestra)·100. Peso constante: dos pesadas consecutivas que difieren a lo sumo 0,3 mg (configurable).
+        </p>
+      </Sec>
+
+      <Sec title="Humedad y base seca">
+        <p>
+          %H b.h. = (m<sub>h</sub> − m<sub>s</sub>)/m<sub>h</sub>·100; %H b.s. = (m<sub>h</sub> − m<sub>s</sub>)/m<sub>s</sub>·100; % materia seca = 100 − %H b.h.
+          Conversiones: X<sub>bs</sub> = X<sub>bh</sub>/(1 − H/100); H<sub>bs</sub> = H<sub>bh</sub>/(100 − H<sub>bh</sub>)·100; X<sub>2</sub> = X<sub>1</sub>·(100 − H<sub>2</sub>)/(100 − H<sub>1</sub>).
+        </p>
+      </Sec>
+
       <Sec title="Código abierto">
         <p>
           Todo el cálculo está en la carpeta <code>src/chem</code> (TypeScript puro, separado de la interfaz) y se verifica con pruebas automáticas (<code>npm test</code>). El archivo <code>TESTS.md</code> lista qué se verifica y contra qué fuente.

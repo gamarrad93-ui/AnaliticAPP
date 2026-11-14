@@ -304,5 +304,64 @@ Se usa el tramo cuyo nominal (2, 4, 6, 8 o 10 mL) está **más cerca** de la lec
 
 ---
 
+## 6. Gravimetría y humedad (`src/chem/__tests__/gravimetria.test.ts`)
+
+**Pesos atómicos usados** (`src/chem/gravimetria/elementos.ts`): tabla de pesos atómicos estándar abreviados de IUPAC/CIAAW, a 5 cifras significativas. Para los elementos que tienen intervalo, se usa el valor convencional.
+El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los valores se contrastaron con la tabla abreviada vigente (2021–2023) tal como se publica. Las masas molares de control salen idénticas a las de los textos usuales: BaSO₄ 233,39, AgCl 143,32, Fe₂O₃ 159,69, Mg₂P₂O₇ 222,55.
+
+| Elemento | Ar | Elemento | Ar | Elemento | Ar | Elemento | Ar |
+|---|---|---|---|---|---|---|---|
+| H | 1,008 | C | 12,011 | N | 14,007 | O | 15,999 |
+| Na | 22,990 | Mg | 24,305 | Al | 26,982 | Si | 28,085 |
+| P | 30,974 | S | 32,06 | Cl | 35,45 | K | 39,098 |
+| Ca | 40,078 | Cr | 51,996 | Fe | 55,845 | Ni | 58,693 |
+| Cu | 63,546 | Zn | 65,38 | Br | 79,904 | Mo | 95,95 |
+| Ag | 107,87 | Sn | 118,71 | I | 126,90 | Ba | 137,33 |
+| Pt | 195,08 | Pb | 207,2 | Bi | 208,98 | | |
+
+(El resto de la tabla periódica, hasta el U, está en el mismo archivo.)
+
+| Prueba | Esperado | Obtenido |
+|---|---|---|
+| M(BaSO₄) | ≈ 233,39 g/mol | 233,386 |
+| F BaSO₄ → S | ≈ 0,1374 | 0,137369 |
+| F Fe₂O₃ → Fe (a = 2, b = 1) | ≈ 0,6994 | 0,699431 |
+| F Mg₂P₂O₇ → P₂O₅ | ≈ 0,6377 | 0,637800 (*) |
+| F AgCl → Cl | ≈ 0,2474 | 0,247349 |
+| F Ni(C₄H₇N₂O₂)₂ → Ni | ≈ 0,2032 | 0,203148 |
+| Humedad: 10,000 g húmeda → 8,000 g seca | 20,00 % b.h.; 25,00 % b.s. | 20,00 %; 25,00 %; materia seca 80,00 % |
+| 5,00 % (b.h.) con H = 20 % | 6,25 % b.s. | 6,25 % (y la vuelta da 5,00 %) |
+
+(*) Con los pesos atómicos actuales da 0,63780. El 0,6377 de muchas tablas viene de pesos atómicos más viejos. Se acepta una diferencia de hasta 0,0001.
+
+**Otras verificaciones:**
+- **Lector de fórmulas:**
+  - Hidratos con "·", "." o "*", y coeficiente decimal (CaSO₄·0,5H₂O = 145,14).
+  - Paréntesis y corchetes anidados (Ni(C₄H₇N₂O₂)₂, (NH₄)₃PO₄·12MoO₃ = 1876,3, K₄[Fe(CN)₆] = 368,34).
+  - Subíndices Unicode. Las cargas se ignoran (SO₄²⁻, SO4 2-, SO4^2-, PO4(3-), Cl-, NH4+).
+  - La composición porcentual suma 100.
+  - Errores claros: símbolo inexistente, paréntesis sin cerrar o de más, minúsculas, "·" sin nada después, caracteres raros.
+  - Todas las fórmulas de la biblioteca se leen sin error.
+- **a y b automáticos:**
+  - Fe₃O₄ → Fe₂O₃ da 3/2; Mg₂P₂O₇ → MgO da 2/1; (NH₄)₃PO₄·12MoO₃ → P₂O₅ da 1/2.
+  - En BaSO₄ → SO₃ el elemento común es S, no O: O e H se descartan salvo que sean el único elemento común.
+  - Con varios elementos comunes (K₂PtCl₆ → KCl) se puede elegir: K da 1/1, Cl da 6/1.
+  - a y b se pueden corregir a mano.
+  - Todos los factores de la tabla clásica tienen elemento común.
+- **Cálculo de una réplica:** m = m(pp)·F·f(alícuota) y % = m/m(muestra)·100. Ejemplo: 0,4321 g de BaSO₄ en 0,5000 g de muestra dan 29,646 % de SO₃.
+- **Peso constante:** dos pesadas consecutivas con diferencia ≤ 0,3 mg (configurable). Se informa en qué pesada se alcanzó y la masa final.
+- **Conversiones de humedad:**
+  - H b.h. 20 % ↔ H b.s. 25 %.
+  - X₂ = X₁·(100 − H₂)/(100 − H₁).
+  - Errores si la masa seca supera a la húmeda o si H ≥ 100 %.
+
+**Ejemplo mixto** (pestaña "Humedad y base seca"):
+- Humedad en tres réplicas: 9,02 %, 9,01 % y 9,01 % (media 9,01 % b.h.).
+- Sulfato como BaSO₄ (F → SO₃ = 0,34302): 29,59 %, 29,52 % y 29,68 % de SO₃ tal cual.
+- Resultado: 29,60 % de SO₃ en base húmeda y 32,53 % en base seca.
+- La cuenta se verificó a mano con Python.
+
+---
+
 ## Cómo agregar una prueba
 Abrí `src/chem/__tests__/*.test.ts`, copiá un bloque `it('…', () => { … })`, cambiá los valores y corré `npm test`.

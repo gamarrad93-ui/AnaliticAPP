@@ -17,6 +17,8 @@ Funciona en la computadora, en el proyector (botón **📽️ Modo proyector**) 
 | ⚡ **Redox** | Curvas E vs V exactas (Fe²⁺/Ce⁴⁺, Fe²⁺/MnO₄⁻, Fe²⁺/Cr₂O₇²⁻, I₃⁻/S₂O₃²⁻ o cuplas a elección), potencial de equivalencia, indicadores redox con error, electrodo de referencia. |
 | 🔗 **EDTA y precipitación** | Curvas pM con α(Y⁴⁻) y NH₃ auxiliar, log K′ vs pH (pH mínimo). Argentometría (pAg/pX, mezclas de haluros), Mohr, Volhard y Fajans. |
 | 🧂 **Solubilidad** | Ksp, ion común (exacto), efecto del pH, "¿precipita?" al mezclar dos soluciones. |
+| ⚖️ **Gravimetría** | Masa molar con composición % (fórmulas con paréntesis, hidratos y cargas), biblioteca editable de formas pesadas y sustancias buscadas, factor gravimétrico con a/b automáticos, cálculo del % m/m con réplicas (x̄, s, CV, t·s/√n), alícuota, base seca y peso constante. |
+| 💧 **Humedad y base seca** | Humedad b.h./b.s. y materia seca con réplicas y peso constante; conversión de resultados entre base húmeda, base seca u otra humedad, también por lotes con CSV; ejemplo mixto con sulfato → % SO₃ en base seca. |
 | 🎯 **Estadística** | Media e IC, Q de Dixon, Grubbs, pruebas t (una muestra, dos muestras, apareada), prueba F, propagación de errores con cualquier fórmula, cifras significativas y tablas de valores críticos. |
 | ℹ️ **Acerca de** | Modelos, supuestos y bibliografía. |
 

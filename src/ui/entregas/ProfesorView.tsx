@@ -2,7 +2,7 @@
  * Pestaña "Profesor": entregas por práctico, valor del alumno vs. recalculado (✓/✗),
  * diagnóstico del error, procedimiento, resumen del grupo y exportación a Excel/CSV.
  */
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { corregir, resumenGrupo, type CampoCorregido, type Correccion } from '../../chem/practicos/correccion';
 import { tablaExportacion } from '../../chem/practicos/exportar';
 import { buscarMaterial } from '../../chem/practicos/material';
@@ -13,6 +13,8 @@ import { exportCsv } from '../components/exporters';
 import { Alert } from '../components/fields';
 import AjustesPanel from './AjustesPanel';
 import { fmtValor, NOMBRE_CRITERIO, PasosView } from './comunes';
+
+const AlumnoForm = lazy(() => import('./AlumnoForm'));
 
 function Marca({ ok }: { ok: boolean | null }) {
   if (ok == null) return <span className="chip bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">sin dato</span>;
@@ -66,8 +68,23 @@ function TablaCampos({ campos, titulo }: { campos: CampoCorregido[]; titulo: str
 
 function Detalle({ p, e, cr, aj, onBorrar }: { p: PracticaDef; e: Entrega; cr: Correccion; aj: Ajustes; onBorrar: () => void }) {
   const c = cr.calculo;
+  const [planilla, setPlanilla] = useState(false);
   return (
     <div className="space-y-3 border-t border-slate-200 pt-3 dark:border-slate-800">
+      <div className="flex justify-end">
+        <button className={`btn ${planilla ? 'btn-primary' : ''}`} onClick={() => setPlanilla(!planilla)} aria-pressed={planilla}>
+          👁️ {planilla ? 'Volver a la corrección' : 'Ver planilla del alumno'}
+        </button>
+      </div>
+      {planilla ? (
+        <div className="rounded-xl border-2 border-brand-200 bg-slate-50 p-2 dark:border-brand-900 dark:bg-slate-950">
+          <p className="px-2 pb-2 text-xs text-slate-600 dark:text-slate-400">Así completó {e.alumno.nombre} la planilla (sólo lectura).</p>
+          <Suspense fallback={<p className="p-4 text-center text-slate-500">Cargando…</p>}>
+            <AlumnoForm entregas={[]} ajustes={aj} inicial={e} soloLectura />
+          </Suspense>
+        </div>
+      ) : (
+      <>
       <div className="grid gap-3 text-sm md:grid-cols-2">
         <div>
           <div className="font-semibold">Materiales</div>
@@ -133,6 +150,8 @@ function Detalle({ p, e, cr, aj, onBorrar }: { p: PracticaDef; e: Entrega; cr: C
       <TablaCampos titulo="Promediables y resultado final" campos={cr.campos.filter((x) => x.seccion === 'promediables' || x.seccion === 'resumen')} />
 
       <PasosView pasos={c.pasos} />
+      </>
+      )}
       <div className="flex justify-end">
         <button className="btn text-red-700 dark:text-red-300" onClick={onBorrar}>
           🗑️ Borrar esta entrega

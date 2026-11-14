@@ -10,6 +10,7 @@ Funciona en la computadora, en el proyector (botón **📽️ Modo proyector**) 
 | Pestaña | Qué hace |
 |---|---|
 | 🧫 **Prácticos** | Los 13 prácticos de la Cuaderneta de Laboratorio 2026: diagramación (cuánto tomar para gastar ≈ 8 mL en bureta de 10,00 mL), planilla de determinaciones y tratamiento estadístico con el criterio de cada práctico (Ir = 2,8·σr, Q de Dixon, CV), especificaciones (USP, RBN), V20 con factor Z, derivadas de la valoración potenciométrica y los 4 modelos de calibración. |
+| 📝 **Entregas** | *Demo* de planillas digitales: el alumno completa la hoja del práctico (P1, P2, P3) con sus resultados; el profesor ve cada valor contra el recalculado (✓/✗), el error probable, el procedimiento, el resumen del grupo y exporta a Excel/CSV. Los datos quedan sólo en el navegador (exportar/importar JSON). |
 | 🧪 **Titulaciones** | Curvas ácido-base exactas (fuertes, débiles, polipróticos, mezclas). Puntos de equivalencia y semiequivalencia, 1ª derivada, pH a cualquier volumen, bandas de indicadores, "¿Qué indicador sirve?" y error de titulación. |
 | 📊 **Especies y buffers** | Diagrama de distribución (α y log C vs pH) con pKa editables. Diseñador de buffers: par conjugado óptimo, gramos/mL a pesar, capacidad buffer. |
 | 📈 **Calibración** | Cuatro modelos sobre los mismos datos (lineal, por el origen, cuadrático y cuadrático sin ordenada), corrección por blanco opcional con sus gráficos, tabla comparativa con el mejor modelo, residuos agrupados, LOD/LOQ, desconocida con intervalo de confianza y adición estándar. Tabla tipo planilla, pegar desde Excel, exportar a PNG y CSV. |
@@ -33,6 +34,7 @@ src/
     data/        ← biblioteca de ácidos/bases (pKa) e indicadores
     stats/       ← regresión, modelos de calibración, t, F, Q, Grubbs, propagación, cifras significativas
     lab/         ← fórmulas de la cuaderneta, criterios de promediabilidad, V20, derivadas
+    practicos/   ← motor de corrección de las entregas (tabla Lab QA, bureta, Z, diagnóstico)
     redox/       ← Nernst + balance de electrones
     complex/     ← EDTA (α, constantes condicionales)
     solubility/  ← Ksp, ion común, pH, argentometría

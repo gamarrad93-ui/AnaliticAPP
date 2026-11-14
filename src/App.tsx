@@ -4,6 +4,7 @@ import { useDisplay } from './ui/display';
 
 // Cada pestaña se carga sólo cuando se abre (la app inicia más rápido en el celular)
 const PracticesTab = lazy(() => import('./ui/tabs/PracticesTab'));
+const EntregasTab = lazy(() => import('./ui/tabs/EntregasTab'));
 const TitrationTab = lazy(() => import('./ui/tabs/TitrationTab'));
 const SpeciesTab = lazy(() => import('./ui/tabs/SpeciesTab'));
 const CalibrationTab = lazy(() => import('./ui/tabs/CalibrationTab'));
@@ -15,6 +16,7 @@ const AboutTab = lazy(() => import('./ui/tabs/AboutTab'));
 
 const TABS = [
   { id: 'practicos', label: 'Prácticos', icon: '🧫', C: PracticesTab },
+  { id: 'entregas', label: 'Entregas', icon: '📝', C: EntregasTab },
   { id: 'titulaciones', label: 'Titulaciones', icon: '🧪', C: TitrationTab },
   { id: 'especies', label: 'Especies y buffers', icon: '📊', C: SpeciesTab },
   { id: 'calibracion', label: 'Calibración', icon: '📈', C: CalibrationTab },

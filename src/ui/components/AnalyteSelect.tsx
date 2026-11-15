@@ -31,5 +31,5 @@ export function compoundOptions(includeCustom = true) {
 }
 
 export function AnalyteSelect(props: { label: string; value: string; onChange: (v: string) => void }) {
-  return <SelectField label={props.label} value={props.value} onChange={props.onChange} options={compoundOptions()} />;
+  return <SelectField label={props.label} value={props.value} onChange={props.onChange} options={compoundOptions()} searchable searchPlaceholder="Buscar por nombre o fórmula (ej. acético, NH3, fosfórico)…" />;
 }

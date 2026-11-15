@@ -1,5 +1,5 @@
 /** Campos de entrada reutilizables (aceptan coma o punto decimal). */
-import { useId, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 
 export function NumField(props: {
   label: ReactNode;
@@ -45,32 +45,81 @@ export function NumField(props: {
   );
 }
 
+/** Texto sin tildes ni mayúsculas, y subíndices como dígitos, para buscar. */
+export function normalizeSearch(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[₀-₉]/g, (c) => String(c.charCodeAt(0) - 0x2080))
+    .toLowerCase();
+}
+
+/** ¿La opción coincide con la búsqueda? Todas las palabras tienen que aparecer (en la etiqueta o el grupo). */
+export function matchesSearch(label: string, query: string, group = ''): boolean {
+  const words = normalizeSearch(query).split(/\s+/).filter(Boolean);
+  const hay = normalizeSearch(`${label} ${group}`);
+  return words.every((w) => hay.includes(w));
+}
+
 export function SelectField<T extends string>(props: {
   label: ReactNode;
   value: T;
   onChange: (v: T) => void;
   options: { value: T; label: string; group?: string }[];
   className?: string;
+  /** agrega un buscador arriba de la lista que va descartando las opciones que no coinciden */
+  searchable?: boolean;
+  searchPlaceholder?: string;
 }) {
   const id = useId();
-  const groups = [...new Set(props.options.map((o) => o.group ?? ''))];
+  const [query, setQuery] = useState('');
+  const filtering = !!props.searchable && query.trim() !== '';
+  const options = filtering ? props.options.filter((o) => matchesSearch(o.label, query, o.group)) : props.options;
+  const groups = [...new Set(options.map((o) => o.group ?? ''))];
+  const onQuery = (q: string) => {
+    setQuery(q);
+    // si la opción elegida ya no coincide, se elige la primera que coincida
+    if (q.trim() === '') return;
+    const m = props.options.filter((o) => matchesSearch(o.label, q, o.group));
+    if (m.length && !m.some((o) => o.value === props.value)) props.onChange(m[0].value);
+  };
   return (
     <div className={props.className}>
       <label htmlFor={id} className="label">
         {props.label}
       </label>
-      <select id={id} className="input" value={props.value} onChange={(e) => props.onChange(e.target.value as T)}>
+      {props.searchable && (
+        <div className="relative mb-1.5">
+          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>🔍</span>
+          <input
+            type="search"
+            className="input pl-8"
+            value={query}
+            onChange={(e) => onQuery(e.target.value)}
+            placeholder={props.searchPlaceholder ?? 'Buscar…'}
+            aria-label={`Buscar: ${typeof props.label === 'string' ? props.label : ''}`}
+            autoComplete="off"
+            spellCheck={false}
+          />
+          {filtering && (
+            <p className={`mt-1 text-xs ${options.length ? 'text-slate-500 dark:text-slate-400' : 'text-red-700 dark:text-red-400'}`}>
+              {options.length === 0 ? 'No hay coincidencias.' : options.length === 1 ? '1 coincidencia.' : `${options.length} coincidencias.`}
+            </p>
+          )}
+        </div>
+      )}
+      <select id={id} className="input" value={props.value} onChange={(e) => props.onChange(e.target.value as T)} disabled={filtering && options.length === 0}>
         {groups.map((g) =>
           g ? (
             <optgroup key={g} label={g}>
-              {props.options.filter((o) => o.group === g).map((o) => (
+              {options.filter((o) => o.group === g).map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
                 </option>
               ))}
             </optgroup>
           ) : (
-            props.options.filter((o) => !o.group).map((o) => (
+            options.filter((o) => !o.group).map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>

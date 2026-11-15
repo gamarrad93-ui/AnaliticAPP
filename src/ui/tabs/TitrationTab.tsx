@@ -284,14 +284,14 @@ export default function TitrationTab() {
         </section>
         <section className="card space-y-3">
           <h2 className="card-title">Titulante</h2>
-          <SelectField label="Titulante" value={titrantId} onChange={setTitrantId} options={TITRANTS.map((t) => ({ value: t.id, label: `${t.name} (${t.formula})` }))} />
+          <SelectField label="Titulante" value={titrantId} onChange={setTitrantId} options={TITRANTS.map((t) => ({ value: t.id, label: `${t.name} (${t.formula})` }))} searchable searchPlaceholder="Buscar titulante…" />
           <NumField label="Concentración del titulante" value={Ct.raw} onChange={Ct.setRaw} unit="mol/L" error={CtErr} />
           <Toggle label="Volumen máximo automático" checked={autoV} onChange={setAutoV} />
           {!autoV && <NumField label="Volumen máximo a graficar" value={VmaxIn.raw} onChange={VmaxIn.setRaw} unit="mL" error={VmaxErr} />}
         </section>
         <section className="card space-y-3">
           <h2 className="card-title">Indicador</h2>
-          <SelectField label="Indicador" value={indId} onChange={onIndicator} options={INDICATORS.map((i) => ({ value: i.id, label: `${i.name} (${fmtFixed(i.low, 1)}–${fmtFixed(i.high, 1)})` }))} />
+          <SelectField label="Indicador" value={indId} onChange={onIndicator} options={INDICATORS.map((i) => ({ value: i.id, label: `${i.name} (${fmtFixed(i.low, 1)}–${fmtFixed(i.high, 1)})` }))} searchable searchPlaceholder="Buscar indicador…" />
           <div className="flex items-center gap-2 text-sm">
             <span className="h-4 w-8 rounded" style={{ background: ind.acidHex }} title={ind.acidColor} />
             <span>{ind.acidColor}</span>

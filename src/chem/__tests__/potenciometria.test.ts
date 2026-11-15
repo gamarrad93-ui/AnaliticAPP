@@ -91,4 +91,13 @@ describe('Incertidumbre (Práctico 11)', () => {
     expect(r.U).toBeCloseTo(2 * c * rel, 9);
     expect(r.terms.reduce((s, t) => s + t.percent, 0)).toBeCloseTo(100, 9);
   });
+  it('es la ecuación de la cuaderneta (pág. 39): c = c(NaOH)·Gb(L)·MM/m·10⁶, con las incertidumbres de su tabla', () => {
+    const cNaOH = 0.01012, GmL = 13.1, m = 21.2345;
+    const doc = ((cNaOH * (GmL / 1000) * 97.9956) / m) * 1e6;
+    const r = combinedUncertainty(P11_FORMULA, { cNaOH: { value: cNaOH, u: 0.00005 }, G: { value: GmL, u: 0.1 }, MM: { value: 97.9956, u: 0.00042 }, m: { value: m, u: 0.0002 } }, 1);
+    expect(r.value).toBeCloseTo(doc, 9);
+    expect(r.U).toBeCloseTo(r.u, 12);
+    expect(P11_UNCERTAINTIES).toEqual({ G: 0.1, MM: 0.00042, m: 0.0002 });
+    expect(P11_MM).toBe(97.9956);
+  });
 });

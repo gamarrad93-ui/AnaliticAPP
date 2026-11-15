@@ -68,7 +68,7 @@ function Criterios({ p }: { p: ProblemaRP }) {
     return (
       <div className="rounded-lg bg-brand-50 px-3 py-2 text-sm dark:bg-brand-950/40">
         <div className="font-semibold">Criterios estadísticos (tabla de la letra)</div>
-        <div>Agente valorante: {c.sigmaR != null ? `σR = ${String(c.sigmaR).replace('.', ',')} mol L-1` : 'σR no indicado en la tabla'}</div>
+        <div>Agente valorante: {c.sigmaR != null ? `σR = ${String(c.sigmaR).replace('.', ',')} mol L-1` : c.cvValorante != null ? `sin σR en la tabla. Indicado por el docente: Ausencia de Anómalos según test de DIXON o GRUBBS, CV < ${String(c.cvValorante)}%` : 'σR no indicado en la tabla'}</div>
         <div>Analito: {c.textoAnalito}</div>
         <div>Mínimo tres valores concordantes en cada etapa.</div>
       </div>
@@ -262,7 +262,7 @@ function Resolver({ p, inicial }: { p: ProblemaRP; inicial?: { std: number[]; an
   const s = parseList(std);
   const a = parseList(an);
   const espectro = p.criterios.tipo === 'rp2' && p.criterios.medida === 'espectrofotometrica';
-  const v = p.criterios.tipo === 'rp1' ? veredictoRP1(p.criterios, s.values, a.values, test) : veredictoRP2(p.criterios, s.values, a.values);
+  const v = p.criterios.tipo === 'rp1' ? veredictoRP1(p.criterios, s.values, a.values, test) : veredictoRP2(p.criterios, s.values, a.values, test);
   return (
     <section className="card min-w-0 space-y-3">
       <h3 className="card-title">Resolver: tus réplicas con los criterios oficiales</h3>
@@ -280,19 +280,19 @@ function Resolver({ p, inicial }: { p: ProblemaRP; inicial?: { std: number[]; an
           {a.bad.length > 0 && <p className="text-sm text-red-700">No entiendo: {a.bad.join(', ')}</p>}
         </div>
       </div>
-      {p.criterios.tipo === 'rp1' && <Segmented value={test} onChange={setTest} options={[{ value: 'dixon', label: 'Test de Dixon' }, { value: 'grubbs', label: 'Test de Grubbs' }]} ariaLabel="Test de anómalos" />}
+      {!espectro && <Segmented value={test} onChange={setTest} options={[{ value: 'dixon', label: 'Test de Dixon' }, { value: 'grubbs', label: 'Test de Grubbs' }]} ariaLabel="Test de anómalos" />}
       {v.titulante && <BloqueView b={v.titulante} unidad="mol/L" />}
       <BloqueView b={v.analito} unidad="" />
       <Procedure
         steps={[
           ...(p.criterios.tipo === 'rp1'
             ? [
-                { title: 'Agente valorante', text: 'Con σR conocido: Ir = 2,8·σR. Se promedian los valores cuya diferencia sea ≤ Ir (mínimo 3). CAI = 1,96·σR/√n.' },
+                { title: 'Agente valorante', text: p.criterios.sigmaR == null && p.criterios.cvValorante != null ? `Sin σR en la tabla (valoración con EDTA): se descarta un valor anómalo si el test elegido lo indica y se verifica CV < ${String(p.criterios.cvValorante)} % (mínimo 3 valores). CAI = t·s/√n.` : 'Con σR conocido: Ir = 2,8·σR. Se promedian los valores cuya diferencia sea ≤ Ir (mínimo 3). CAI = 1,96·σR/√n.' },
                 { title: 'Analito', text: 'Se descarta un valor anómalo si el test (Dixon: Q = brecha/rango; Grubbs: G = |x − x̄|/s, α = 0,05) lo indica. Con los restantes se verifica CV < límite y se informa x̄ ± t·s/√n (95 %, n − 1 g.l.).' },
               ]
             : [
                 { title: 'Estandarización', text: 'CV = s/x̄·100 de las 3 valoraciones: ideal < 0,5 %, aceptable < 1 %.' },
-                { title: 'Analito', text: espectro ? 'Triplicado genuino: promediable si CV < 10 %.' : 'Se descarta un valor anómalo (Dixon, 95 %) y se promedian los valores con CV ideal < 1 % o aceptable < 2 %. Resultado x̄ ± t·s/√n.' },
+                { title: 'Analito', text: espectro ? 'Triplicado genuino: promediable si CV < 10 %.' : 'Si hace falta, se descarta un valor anómalo (Dixon o Grubbs, 95 %; la letra no nombra el test) y se promedian los valores con CV ideal < 1 % o aceptable < 2 %. Resultado x̄ ± t·s/√n.' },
               ]),
         ]}
       />

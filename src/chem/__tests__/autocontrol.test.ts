@@ -18,4 +18,11 @@ describe('Preguntas de autocontrol', () => {
     expect(Object.fromEntries(AUTOCONTROL.map((a) => [a.practico, a.preguntas.length]))).toEqual({ 1: 9, 2: 7, 3: 9, 4: 5, 5: 5, 6: 8, 7: 8, 8: 10, 9: 9, 11: 13, 12: 11, 13: 4 });
   });
   it('puntaje de Preguntas Previas del Teórico 1', () => expect(PUNTAJE_PREGUNTAS_PREVIAS).toEqual({ individual: 5, grupal: 7, total: 12 }));
+  it('no quedan preguntas con ecuación o figura ilegible (verificadas contra el PDF de la cuaderneta)', () => {
+    expect(AUTOCONTROL.flatMap((a) => a.preguntas).filter((p) => p.legible === false)).toEqual([]);
+  });
+  it('figuras de las preguntas (archivos en public/)', () => {
+    const figuras = AUTOCONTROL.flatMap((a) => a.preguntas).flatMap((p) => (p.figura ? [p.figura] : []));
+    expect(figuras).toEqual(['autocontrol/p3-curva.png']);
+  });
 });

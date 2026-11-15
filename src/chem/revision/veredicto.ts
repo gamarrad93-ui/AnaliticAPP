@@ -1,9 +1,10 @@
 /**
  * Veredicto con los criterios oficiales de cada Revisión Práctica.
  *  1ª RP: agente valorante → σR (Ir = 2,8·σR, CAI = 1,96·σR/√n); analito → ausencia de anómalos
- *         (Dixon o Grubbs) y CV < límite de la tabla.
+ *         (Dixon o Grubbs) y CV < límite de la tabla. Con EDTA (sin σR en la tabla) el agente
+ *         valorante usa el mismo criterio que el analito: sin anómalos y CV < 2 % (indicado por el docente).
  *  2ª RP: estandarización → 3 valores, CV < 0,5 % (ideal) / 1 % (aceptable);
- *         analito → sin anómalos (Dixon) y CV < 1 % (ideal) / 2 % (aceptable);
+ *         analito → sin anómalos (la letra no nombra el test: Dixon o Grubbs, a elección) y CV < 1 % (ideal) / 2 % (aceptable);
  *         espectrofotometría → CV < 10 %.
  */
 import { mean, sd } from '../stats/descriptive';
@@ -61,11 +62,23 @@ export function quitarAnomalo(v: number[], test: 'dixon' | 'grubbs'): { idx: num
   return { idx: r.reject ? idx.filter((i) => i !== v.indexOf(r.suspect)) : idx, texto: t };
 }
 
+const DG_TEXTO = 'ausencia de anómalos según test de Dixon o Grubbs';
+
 export function veredictoRP1(c: CriteriosRP1, titulante: number[], analito: number[], test: 'dixon' | 'grubbs' = 'dixon'): { titulante: Bloque; analito: Bloque } {
   // agente valorante
   let tb: Bloque;
   if (titulante.length < 3) tb = bloque('Agente valorante', titulante, titulante.map((_, i) => i), 'faltan-datos', ['Hacen falta al menos 3 valores.']);
-  else if (c.sigmaR == null) tb = bloque('Agente valorante', titulante, titulante.map((_, i) => i), 'sin-criterio', ['La tabla de la letra no indica σR para este problema: solo se informan los estadísticos.']);
+  else if (c.sigmaR == null && c.cvValorante != null) {
+    const q = quitarAnomalo(titulante, test);
+    const st = stats(q.idx.map((i) => titulante[i]));
+    const ok = st.n >= 3 && st.cv < c.cvValorante;
+    tb = bloque('Agente valorante', titulante, q.idx, ok ? 'cumple' : 'no-cumple', [
+      `La tabla de la letra no trae σR para este problema. Criterio indicado por el docente: ${DG_TEXTO}, CV < ${f(c.cvValorante, 2)} %.`,
+      q.texto,
+      `CV de los valores restantes = ${f(st.cv, 3)} % ${st.cv < c.cvValorante ? '<' : '≥'} ${f(c.cvValorante, 2)} %${st.n < 3 ? ' (quedan menos de 3 valores)' : ''}.`,
+      'Incertidumbre: CAI = t·s/√n (95 %).',
+    ]);
+  } else if (c.sigmaR == null) tb = bloque('Agente valorante', titulante, titulante.map((_, i) => i), 'sin-criterio', ['La tabla de la letra no indica σR para este problema: solo se informan los estadísticos.']);
   else {
     const Ir = 2.8 * c.sigmaR;
     const idx = largestConcordantSubset(titulante, Ir);
@@ -93,7 +106,7 @@ export function veredictoRP1(c: CriteriosRP1, titulante: number[], analito: numb
   return { titulante: tb, analito: ab };
 }
 
-export function veredictoRP2(c: CriteriosRP2, titulante: number[], analito: number[]): { titulante: Bloque | null; analito: Bloque } {
+export function veredictoRP2(c: CriteriosRP2, titulante: number[], analito: number[], test: 'dixon' | 'grubbs' = 'dixon'): { titulante: Bloque | null; analito: Bloque } {
   let tb: Bloque | null = null;
   if (c.medida !== 'espectrofotometrica') {
     const { cvIdeal, cvAceptable } = CRITERIOS_RP2.estandarizacion;
@@ -117,7 +130,7 @@ export function veredictoRP2(c: CriteriosRP2, titulante: number[], analito: numb
     ab = bloque('Analito', analito, analito.map((_, i) => i), ok ? 'cumple' : 'no-cumple', [`Criterio de promediabilidad en espectrofotometría: CV < ${CRITERIOS_RP2.espectrofotometria.cvMax} %.`, `CV = ${f(st.cv, 3)} %.`]);
   } else {
     const { cvIdeal, cvAceptable } = CRITERIOS_RP2.analito;
-    const q = quitarAnomalo(analito, 'dixon');
+    const q = quitarAnomalo(analito, test);
     const vals = q.idx.map((i) => analito[i]);
     const sub = largestSubsetUnderCV(vals, cvAceptable, 3).map((k) => q.idx[k]);
     const sel = sub.length ? sub : q.idx;
@@ -125,6 +138,7 @@ export function veredictoRP2(c: CriteriosRP2, titulante: number[], analito: numb
     const estado: Estado = sub.length >= 3 ? (st.cv < cvIdeal ? 'ideal' : 'aceptable') : 'no-cumple';
     ab = bloque('Analito', analito, sel, estado, [
       `Se promedian los valores que no superen un CV de ${f(cvIdeal, 2)} % (ideal) o ${f(cvAceptable, 2)} % (aceptable), y/o que no presenten valores anómalos.`,
+      'La letra no nombra el test de anómalos: en caso de ser necesario se aplica Dixon o Grubbs.',
       q.texto,
       `CV = ${f(st.cv, 3)} % → ${estado === 'ideal' ? 'ideal' : estado === 'aceptable' ? 'aceptable' : 'no cumple'}.`,
       ...(c.medida === 'potenciometrica' ? ['La incertidumbre de la concentración se calcula por propagación (pestaña Potenciometría).'] : []),

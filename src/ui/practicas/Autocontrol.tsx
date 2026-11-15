@@ -102,6 +102,7 @@ export function Autocontrol({ practico }: { practico: number }) {
             {st.notas[actual.id] && <span className="chip">{{ bien: '✓ La tenía bien', medias: '≈ A medias', mal: '✗ Mal' }[st.notas[actual.id]]}</span>}
           </div>
           <p className="font-semibold">{actual.pregunta}</p>
+          {actual.figura && <img src={`./${actual.figura}`} alt={`Figura de la cuaderneta para la pregunta ${actual.letra}`} className="max-h-96 w-full max-w-2xl rounded-lg border border-slate-200 bg-white object-contain dark:border-slate-700" loading="lazy" />}
           {actual.legible === false && <p className="text-xs text-amber-700 dark:text-amber-300">Esta pregunta incluye una ecuación o figura de la cuaderneta que no se reproduce acá: consultala en el original.</p>}
           <div>
             <label className="label" htmlFor={`resp-${actual.id}`}>Tu respuesta</label>

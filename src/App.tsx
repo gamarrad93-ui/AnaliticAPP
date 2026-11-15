@@ -12,6 +12,7 @@ const StatsTab = lazy(() => import('./ui/tabs/StatsTab'));
 const RedoxTab = lazy(() => import('./ui/tabs/RedoxTab'));
 const ComplexTab = lazy(() => import('./ui/tabs/ComplexTab'));
 const SolubilityTab = lazy(() => import('./ui/tabs/SolubilityTab'));
+const RevisionTab = lazy(() => import('./ui/tabs/RevisionTab'));
 const PotentiometryTab = lazy(() => import('./ui/tabs/PotentiometryTab'));
 const GravimetryTab = lazy(() => import('./ui/tabs/GravimetryTab'));
 const HumidityTab = lazy(() => import('./ui/tabs/HumidityTab'));
@@ -20,6 +21,7 @@ const AboutTab = lazy(() => import('./ui/tabs/AboutTab'));
 const TABS = [
   { id: 'practicos', label: 'Prácticos', icon: '🧫', C: PracticesTab },
   { id: 'entregas', label: 'Entregas', icon: '📝', C: EntregasTab },
+  { id: 'revision', label: 'Revisión práctica', icon: '🎲', C: RevisionTab },
   { id: 'titulaciones', label: 'Titulaciones', icon: '🧪', C: TitrationTab },
   { id: 'especies', label: 'Especies y buffers', icon: '📊', C: SpeciesTab },
   { id: 'calibracion', label: 'Calibración', icon: '📈', C: CalibrationTab },

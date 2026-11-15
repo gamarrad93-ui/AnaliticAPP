@@ -397,5 +397,56 @@ El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los
 
 ---
 
+## 8. Revisión práctica (`src/chem/__tests__/revision.test.ts`)
+
+**Datos.** Los problemas, los criterios y los textos están en `src/data/revision-practica.ts`, copiados literalmente de la letra de cada revisión: 14 problemas en la 1ª y 7 en la 2ª. La diagramación dura 20 min en la 1ª y 25 min en la 2ª.
+
+**Un problema por revisión, verificado a mano:**
+- **1ª RP, problema 1 (NaHCO₃, pureza 95 %).** HCl 0,25 M, G = 8,00 mL → n = 2,000·10⁻³ mol.
+  - Na₂CO₃ = 1,000·10⁻³ mol × 105,99 = **0,10599 g**.
+  - NaHCO₃ = 2,000·10⁻³ × 84,007 / 0,95 = **0,17686 g**.
+  - pH en el PE (motor exacto): entre 3,5 y 5, por eso heliantina.
+- **1ª RP, problema 7 (dureza, 1060 mg CaCO₃/L).** EDTA 0,02 M, G = 8,00 mL → 1,6·10⁻⁴ mol = 16,01 mg de CaCO₃ → **15,10 mL** de agua.
+- **2ª RP:** los valores coinciden con la planilla "Revisión práctica 2026 (P1 a P7)".
+
+| Problema | Valor | App |
+|---|---|---|
+| 1 ácido ascórbico | Na₂S₂O₃ para G blanco = 8 mL | 0,2500 M |
+| | KIO₃ por estandarización | 0,07133 g |
+| | ácido ascórbico para G retro = 2 mL | 0,13209 g |
+| 2 NaClO | Na₂S₂O₃ para G = 8 mL con 1,00 mL | 0,14104 M |
+| | KIO₃ | 0,04024 g |
+| | KI (1,5×) | 0,2810 g |
+| | H₂SO₄ 1:4 (1,5×) | 0,2351 mL |
+| 3 MgCl₂·6H₂O | NaCl | 0,04675 g |
+| | muestra (98 %) | 0,08298 g |
+| 4 KSCN | alícuota para G(AgNO₃) = 8 mL | 6,40 mL |
+| 5 ácido cítrico | G al PE (z = 3, 1 mL) | 30,00 mL |
+| | H₂C₂O₄·2H₂O para G = 10 mL | 0,006303 g |
+| 6 paracetamol | solución problema | 4000 mg/L |
+| | factor de dilución | 400 |
+| 7 Fe²⁺ | Fe en la solución problema | 25 112 mg/L |
+| | factor de dilución | 12 556 |
+
+**Sorteo:**
+- El mismo código da siempre los mismos valores.
+- Las concentraciones "reales" quedan dentro de ±4 % de la nominal.
+- Las purezas quedan por encima del mínimo declarado.
+
+**Veredicto con los criterios oficiales:**
+- **1ª RP:**
+  - Ir = 2,8·σR. Con 0,2512, 0,2515, 0,2509 y 0,2540 se descarta 0,2540, y CAI = 1,96·σR/√3.
+  - Dixon: con 99,1, 99,3, 99,2 y 97,0 queda Q = 0,913 > 0,829 y se descarta 97,0.
+  - Si la tabla no trae σR, el agente valorante queda "sin criterio".
+- **2ª RP:**
+  - Estandarización: ideal con CV < 0,5 %, aceptable con CV < 1 %, y "no cumple" por encima.
+  - Espectrofotometría: CV < 10 %.
+
+**Valores críticos:**
+- Q de Dixon al 95 % (n = 3 a 10): 0,970, 0,829, 0,710, 0,625, 0,568, 0,526, 0,493 y 0,466. Coinciden con la tabla de Rorabacher (1991).
+- G de Grubbs bilateral con α = 0,05 (n = 3, 4, 5, 6, 7, 8 y 10): 1,1543, 1,4812, 1,7150, 1,8871, 2,0200, 2,1266 y 2,2900. Coinciden con ASTM E178 y con NIST (calculados a partir de la distribución t).
+
+---
+
 ## Cómo agregar una prueba
 Abrí `src/chem/__tests__/*.test.ts`, copiá un bloque `it('…', () => { … })`, cambiá los valores y corré `npm test`.

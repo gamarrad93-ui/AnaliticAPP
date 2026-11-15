@@ -437,7 +437,7 @@ El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los
 - **1ª RP:**
   - Ir = 2,8·σR. Con 0,2512, 0,2515, 0,2509 y 0,2540 se descarta 0,2540, y CAI = 1,96·σR/√3.
   - Dixon: con 99,1, 99,3, 99,2 y 97,0 queda Q = 0,913 > 0,829 y se descarta 97,0.
-  - Si la tabla no trae σR, el agente valorante queda "sin criterio".
+  - Si la tabla no trae σR (EDTA: ZnSO₄ y dureza), el agente valorante usa el criterio indicado por el docente: sin anómalos (Dixon o Grubbs) y CV < 2 %. Sin ese dato queda "sin criterio".
 - **2ª RP:**
   - Estandarización: ideal con CV < 0,5 %, aceptable con CV < 1 %, y "no cumple" por encima.
   - Espectrofotometría: CV < 10 %.

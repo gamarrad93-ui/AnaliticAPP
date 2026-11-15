@@ -23,6 +23,12 @@ export interface CriteriosRP1 {
   tipo: 'rp1';
   /** σR para la concentración del agente valorante (mol/L); null = no figura en la tabla */
   sigmaR: number | null;
+  /**
+   * CV máximo (%) para el agente valorante cuando la tabla no trae σR (valoraciones con EDTA).
+   * No figura en la letra: lo indicó el docente (15/11/2026). Se aplica junto con la ausencia de
+   * anómalos (Dixon o Grubbs), igual que para el analito.
+   */
+  cvValorante?: number;
   /** texto literal del criterio para el analito */
   textoAnalito: string;
   /** CV máximo del analito (%) */
@@ -127,7 +133,7 @@ export const CRITERIOS_RP2 = {
 } as const;
 
 const DG = 'Ausencia de Anómalos según test de DIXON o GRUBBS';
-const c1 = (sigmaR: number | null, cvMax: number): CriteriosRP1 => ({ tipo: 'rp1', sigmaR, textoAnalito: `${DG}, CV < ${String(cvMax)}%`, cvMax });
+const c1 = (sigmaR: number | null, cvMax: number, cvValorante?: number): CriteriosRP1 => ({ tipo: 'rp1', sigmaR, textoAnalito: `${DG}, CV < ${String(cvMax)}%`, cvMax, ...(cvValorante != null ? { cvValorante } : {}) });
 
 export const PROBLEMAS: ProblemaRP[] = [
   // ---------------- 1ª Revisión Práctica ----------------
@@ -136,8 +142,8 @@ export const PROBLEMAS: ProblemaRP[] = [
   { id: '1-03', rp: 1, numero: 3, titulo: 'Valoración de una disolución problema de H3PO4', contenido: '0,5 mol L-1', tecnica: 'Volumetría ácido-base', tema: 'Ácido poliprótico con NaOH', criterios: c1(0.0003, 1) },
   { id: '1-04', rp: 1, numero: 4, titulo: 'Determinación del % m-m de una muestra de NaH2PO4.H2O', contenido: 'Aprox. 100%', tecnica: 'Volumetría ácido-base', tema: 'Anfótero con NaOH', criterios: c1(0.0003, 2) },
   { id: '1-05', rp: 1, numero: 5, titulo: 'Determinación del % m-m de una muestra de Na2HPO4.12H2O', contenido: 'Aprox. 100%', tecnica: 'Volumetría ácido-base', tema: 'Anfótero con HCl', criterios: c1(0.0003, 2) },
-  { id: '1-06', rp: 1, numero: 6, titulo: 'Determinación del % m-m de una muestra de ZnSO4.7H2O', contenido: 'Aprox. 100%', tecnica: 'Complejometría', tema: 'Metal con EDTA', criterios: c1(null, 2) },
-  { id: '1-07', rp: 1, numero: 7, titulo: 'Determinación de la dureza total de una muestra de agua.', contenido: '1060 mg CaCO3 / L', tecnica: 'Complejometría', tema: 'Dureza con EDTA', criterios: c1(null, 2) },
+  { id: '1-06', rp: 1, numero: 6, titulo: 'Determinación del % m-m de una muestra de ZnSO4.7H2O', contenido: 'Aprox. 100%', tecnica: 'Complejometría', tema: 'Metal con EDTA', criterios: c1(null, 2, 2) },
+  { id: '1-07', rp: 1, numero: 7, titulo: 'Determinación de la dureza total de una muestra de agua.', contenido: '1060 mg CaCO3 / L', tecnica: 'Complejometría', tema: 'Dureza con EDTA', criterios: c1(null, 2, 2) },
   { id: '1-08', rp: 1, numero: 8, titulo: 'Determinación del % m-m de una muestra de Na2C2O4', contenido: '>95%', tecnica: 'Permanganimetría', tema: 'Oxalato con KMnO4', criterios: c1(0.000051, 2) },
   { id: '1-09', rp: 1, numero: 9, titulo: 'Determinación del % m-m de una muestra de sal de Mohr (Fe(NH4)2(SO4)2.6H2O)', contenido: '>95%', tecnica: 'Permanganimetría', tema: 'Fe(II) con KMnO4', criterios: c1(0.000051, 2) },
   { id: '1-10', rp: 1, numero: 10, titulo: 'Determinación del % m-m de una muestra de ácido tartárico', contenido: '>95%', tecnica: 'Volumetría ácido-base', tema: 'Ácido diprótico con NaOH', criterios: c1(0.0003, 2) },

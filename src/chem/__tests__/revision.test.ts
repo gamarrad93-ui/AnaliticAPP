@@ -128,10 +128,18 @@ describe('Veredicto con los criterios oficiales', () => {
     expect(v.analito.incluidos).toEqual([true, true, true, false]);
     expect(v.analito.estado).toBe('cumple');
   });
-  it('1ª RP sin σR en la tabla → sin criterio para el valorante', () => {
+  it('1ª RP sin σR en la tabla (EDTA) → anómalos y CV < 2 % para el valorante', () => {
     const p = getProblema('1-06')!;
     if (p.criterios.tipo !== 'rp1') throw new Error();
-    expect(veredictoRP1(p.criterios, [0.02, 0.0201, 0.0199], [99, 99.5, 99.2]).titulante.estado).toBe('sin-criterio');
+    // EDTA: la tabla no trae σR; criterio indicado por el docente = sin anómalos (Dixon o Grubbs) y CV < 2 %
+    expect(p.criterios.cvValorante).toBe(2);
+    expect(veredictoRP1(p.criterios, [0.02, 0.0201, 0.0199], [99, 99.5, 99.2]).titulante.estado).toBe('cumple');
+    expect(veredictoRP1(p.criterios, [0.02, 0.0201, 0.0199], [99, 99.5, 99.2], 'grubbs').titulante.estado).toBe('cumple');
+    expect(veredictoRP1(p.criterios, [0.0200, 0.0210, 0.0190], [99, 99.5, 99.2]).titulante.estado).toBe('no-cumple');
+    const conAnomalo = veredictoRP1(p.criterios, [0.02000, 0.02001, 0.01999, 0.02002, 0.02300], [99, 99.5, 99.2]).titulante;
+    expect(conAnomalo.estado).toBe('cumple');
+    expect(conAnomalo.incluidos).toEqual([true, true, true, true, false]);
+    expect(veredictoRP1({ ...p.criterios, cvValorante: undefined }, [0.02, 0.0201, 0.0199], [99, 99.5, 99.2]).titulante.estado).toBe('sin-criterio');
   });
   it('2ª RP: estandarización ideal/aceptable y analito', () => {
     const p = getProblema('2-03')!;

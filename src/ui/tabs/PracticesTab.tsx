@@ -6,6 +6,7 @@
 import { useEffect, useState, type ComponentType } from 'react';
 import { P1, P2, P3, P4, P5, P6, P7 } from '../practicas/semestre1';
 import { P8, P9, P10, P11, P12, P13 } from '../practicas/semestre2';
+import { Autocontrol } from '../practicas/Autocontrol';
 
 const LIST: { n: number; sem: 1 | 2; title: string; C: ComponentType }[] = [
   { n: 1, sem: 1, title: 'Verificación de material volumétrico', C: P1 },
@@ -73,8 +74,13 @@ export default function PracticesTab() {
         </div>
         <p className="hidden text-xs text-slate-500 lg:block">Gasto de referencia: 8 mL en bureta de 10,00 mL.</p>
       </nav>
-      <div className="min-w-0">
+      <div className="min-w-0 space-y-4">
         <cur.C key={n} />
+        <Autocontrol key={`a${n}`} practico={n} />
+        <section className="card flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm">¿Preparando la revisión práctica? Sorteá un problema y practicá la diagramación con reloj.</p>
+          <a className="btn btn-primary" href="#revision">🎲 Simulador de diagramación</a>
+        </section>
       </div>
     </div>
   );

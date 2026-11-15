@@ -24,3 +24,10 @@ Lo que sigue no se completó en la app porque no está, o no se lee, en los docu
 ## Preguntas de autocontrol
 - La cuaderneta trae solo las preguntas, sin respuestas. Las respuestas modelo de la app son **borradores a validar por el docente**.
 - El Teórico 1 indica 5 puntos de Preguntas Previas en prácticas individuales y 7 en grupales, pero no dice qué prácticas son grupales.
+- El **Práctico 10** (humedad de yerba mate) no tiene preguntas de autocontrol en la cuaderneta.
+- **Ecuaciones o figuras ilegibles** en el texto extraído (marcadas `legible: false` en `src/data/autocontrol.ts`):
+  - Práctico 2, pregunta a): la ecuación a deducir se reconstruyó como C(HCl) = 2·m·(Assay/100)·1000/(MM·G).
+  - Práctico 3, pregunta a): la figura de la curva con los puntos A a F.
+  - Práctico 3, pregunta d): el enunciado es una ecuación ilegible.
+  - Práctico 11, pregunta i): la notación de la celda se reconstruyó.
+- Para validar una respuesta, el docente edita `src/data/autocontrol.ts` y pone `validada: true`; la app deja de mostrar "borrador".

@@ -104,6 +104,14 @@ export default function AboutTab() {
         </p>
       </Sec>
 
+      <Sec title="Revisión práctica y autocontrol">
+        <p>
+          Los problemas, criterios y preguntas se cargaron de los documentos del curso, sin agregar contenido. La solución de referencia de cada problema la calcula el motor
+          (estequiometría, tomas y gasto teórico, pH en el punto equivalente con el motor ácido-base exacto). Veredicto: 1ª RP con σR (Ir = 2,8·σR), Dixon o Grubbs y CV;
+          2ª RP con CV ideal/aceptable y CV &lt; 10 % en espectrofotometría. Las respuestas modelo del autocontrol son borradores a validar por el docente.
+        </p>
+      </Sec>
+
       <Sec title="Potenciometría">
         <p>
           Tabla del informe: Ḡ = (G<sub>i</sub> + G<sub>i+1</sub>)/2, 1ª derivada ΔpH/ΔG, Ḡ̄ y 2ª derivada. Punto de equivalencia por tres métodos: máximo de la 1ª derivada (con refinamiento opcional por una parábola),

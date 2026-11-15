@@ -448,5 +448,15 @@ El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los
 
 ---
 
+## 9. Preguntas de autocontrol (`src/chem/__tests__/autocontrol.test.ts`)
+
+- Las preguntas de `src/data/autocontrol.ts` están copiadas de la cuaderneta:
+  - Cantidad por práctico: 9, 7, 9, 5, 5, 8, 8, 10, 9, (P10: ninguna), 13, 11 y 4.
+  - Los identificadores no se repiten y las letras están en orden.
+- Las respuestas modelo son **borradores a validar por el docente** (ver PENDIENTES.md).
+- El puntaje de las Preguntas Previas (5 en individual y 7 en grupal, sobre 12) es el del Teórico 1.
+
+---
+
 ## Cómo agregar una prueba
 Abrí `src/chem/__tests__/*.test.ts`, copiá un bloque `it('…', () => { … })`, cambiá los valores y corré `npm test`.

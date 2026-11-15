@@ -363,5 +363,39 @@ El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los
 
 ---
 
+## 7. Potenciometría (`src/chem/__tests__/potenciometria.test.ts`)
+
+**Tabla del informe.** Las columnas son las de la cuaderneta:
+- Ḡᵢ = (Gᵢ + Gᵢ₊₁)/2 y d1 = ΔpH/ΔG.
+- Ḡ̄ᵢ = (Ḡᵢ + Ḡᵢ₊₁)/2 y d2 = Δd1/ΔḠ.
+- Se verificó a mano con 4 puntos: G = 0, 1, 2, 4 y pH = 3, 4, 6, 7.
+
+**Valoración sintética.** 25,00 mL de CH₃COOH 0,1 M con NaOH 0,1 M, calculada con el motor ácido-base. Incrementos de 1,0 mL, y de 0,2 mL desde 4 mL antes hasta 4 mL después del punto equivalente, como indica el procedimiento.
+
+| Método | Pedido | Obtenido |
+|---|---|---|
+| Cero de la 2ª derivada (interpolación lineal) | 25,00 ± 0,05 mL | 24,9993 mL |
+| Máximo de la 1ª derivada | dentro del paso (0,2 mL) | 24,90 mL |
+| Máximo refinado con parábola | — | 24,9993 mL |
+| Método gráfico (tangentes paralelas) | — | 24,9994 mL |
+| pH en el PE | > 8 | 8,72 |
+
+**Otras verificaciones:**
+- La misma curva en mV (E = 400 − 59,16·pH, decreciente) da exactamente el mismo punto de equivalencia.
+- H₃PO₄ 0,05 M (20 mL) con NaOH 0,1 M: detecta dos saltos, en 10,0 y 20,0 mL (± 0,2 mL).
+- Los volúmenes desordenados se ordenan y los repetidos se descartan, con aviso.
+
+**Calibración del pH-metro:**
+- Pendiente de Nernst: −ln10·R·T/F, con R = 8,314462618 J/(mol·K) y F = 96485,33212 C/mol. Da −59,16 mV/pH a 25 °C y −58,17 a 20 °C.
+- Buffers 4,01, 7,00 y 10,01 con −59,16 mV/pH exacto: pendiente del 100,0 %, R² = 1 y "cumple".
+- Una pendiente de ~53 mV/pH no cumple el criterio de 95 %.
+
+**Incertidumbre (Práctico 11):**
+- El motor general (derivadas numéricas) coincide con la fórmula de las incertidumbres relativas en cuadratura para c = c(NaOH)·G·M·1000/m.
+- Los porcentajes de contribución suman 100 % y U = k·u_c.
+- La comparación con el ejemplo del documento queda pendiente (ver PENDIENTES.md).
+
+---
+
 ## Cómo agregar una prueba
 Abrí `src/chem/__tests__/*.test.ts`, copiá un bloque `it('…', () => { … })`, cambiá los valores y corré `npm test`.

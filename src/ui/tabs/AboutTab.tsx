@@ -104,6 +104,14 @@ export default function AboutTab() {
         </p>
       </Sec>
 
+      <Sec title="Potenciometría">
+        <p>
+          Tabla del informe: Ḡ = (G<sub>i</sub> + G<sub>i+1</sub>)/2, 1ª derivada ΔpH/ΔG, Ḡ̄ y 2ª derivada. Punto de equivalencia por tres métodos: máximo de la 1ª derivada (con refinamiento opcional por una parábola),
+          cero de la 2ª derivada por interpolación lineal y método gráfico de las tangentes paralelas. Calibración: ajuste lineal E = E<sub>0</sub> + m·pH y pendiente de Nernst −ln10·RT/F.
+          Incertidumbre combinada por propagación de primer orden con derivadas parciales numéricas.
+        </p>
+      </Sec>
+
       <Sec title="Gravimetría">
         <p>
           Masa molar con los pesos atómicos estándar abreviados de IUPAC. El lector de fórmulas acepta paréntesis y corchetes, hidratos con "·" o "." y cargas (que se ignoran).

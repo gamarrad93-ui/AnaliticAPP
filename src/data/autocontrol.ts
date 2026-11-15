@@ -6,7 +6,9 @@
  * quede revisada, marcar `validada: true`.
  *
  * `legible: false` = la pregunta tiene una ecuación o figura que no se pudo extraer del documento
- * (ver PENDIENTES.md); se muestra el texto disponible.
+ * (ver PENDIENTES.md); se muestra el texto disponible. Hoy no queda ninguna: las 4 que había se
+ * verificaron contra el PDF de la cuaderneta (págs. 11, 14, 15 y 40).
+ * `figura` = imagen de la cuaderneta que acompaña a la pregunta (ruta dentro de `public/`).
  */
 
 export interface PreguntaAutocontrol {
@@ -16,6 +18,7 @@ export interface PreguntaAutocontrol {
   borrador: string;
   validada?: boolean;
   legible?: boolean;
+  figura?: string;
 }
 
 export interface AutocontrolPractico {
@@ -64,9 +67,8 @@ export const AUTOCONTROL: AutocontrolPractico[] = [
     practico: 2,
     titulo: 'Preparación y Estandarización de HCl aprox. 0,250M',
     preguntas: [
-      q(2, 'a', 'Deducir la ecuación: C(HCl) = 2·m(Na2CO3)·(Assay/100)·1000 / (MM·G)',
-        'Reacción hasta el 2º punto equivalente: Na2CO3 + 2 HCl → 2 NaCl + CO2 + H2O, así que n(HCl) = 2·n(Na2CO3). n(Na2CO3) = m·(Assay/100)/MM y n(HCl) = C·G/1000. Igualando: C(HCl) = 2·m·(Assay/100)·1000/(MM·G).',
-        { legible: false }),
+      q(2, 'a', 'Deducir la ecuación: C(HCl) (mol/L) = 2·m(Na2CO3) (g)·(Assay(Na2CO3) (%)/100) / [MM(Na2CO3) (g/mol)·G (L)]',
+        'Reacción hasta el 2º punto equivalente: Na2CO3 + 2 HCl → 2 NaCl + CO2 + H2O, así que n(HCl) = 2·n(Na2CO3). n(Na2CO3) = m·(Assay/100)/MM y n(HCl) = C·G, con G en litros. Igualando: C(HCl) = 2·m·(Assay/100)/(MM·G). Si el gasto se usa en mL, queda multiplicado por 1000.'),
       q(2, 'b', 'Busque en la bibliografía recomendada la curva de valoración de la práctica. Identifique hasta qué punto equivalente se valora en la clase.',
         'La curva de Na2CO3 con HCl tiene dos saltos: el 1º (HCO3⁻, pH ≈ 8,3) y el 2º (H2CO3/CO2, pH ≈ 4). En la clase se valora hasta el 2º punto equivalente, que es el más nítido, con un indicador de viraje ácido (heliantina o similar).'),
       q(2, 'c', '¿Qué tipo de sustancia es un indicador ácido – base?',
@@ -86,15 +88,14 @@ export const AUTOCONTROL: AutocontrolPractico[] = [
     titulo: 'Estandarización de NaOH aprox. 0,1M',
     preguntas: [
       q(3, 'a', 'La curva de titulación de la valoración de la práctica es la siguiente: Correlacione los puntos A a F con los siguientes números (una misma letra puede corresponder a más de un número): 1. Exceso de NaOH, 2. Primer punto equivalente, 3. Solución Buffer H2C2O4 / HC2O4-, 4. Solución de NaHC2O4, 5. Solución de H2C2O4, 6. Solución Buffer HC2O4-/ C2O42-, 7. Segundo Punto equivalente, 8. Solución de Na2C2O4',
-        'Recorriendo la curva de izquierda a derecha: inicio = solución de H2C2O4 (5); primera zona de pendiente baja = buffer H2C2O4/HC2O4⁻ (3); primer punto equivalente = solución de NaHC2O4 (2 y 4); segunda zona buffer HC2O4⁻/C2O4²⁻ (6); segundo punto equivalente = solución de Na2C2O4 (7 y 8); después, exceso de NaOH (1). La asignación de cada letra depende de la figura de la cuaderneta.',
-        { legible: false }),
+        'A = solución de H2C2O4, antes de agregar NaOH (5). B = buffer H2C2O4/HC2O4⁻ (3). C = primer punto equivalente, solución de NaHC2O4 (2 y 4): es el salto chico, a la mitad del gasto del segundo. D = buffer HC2O4⁻/C2O4²⁻ (6). E = segundo punto equivalente, solución de Na2C2O4 (7 y 8): es el salto grande. F = exceso de NaOH (1).',
+        { figura: 'autocontrol/p3-curva.png' }),
       q(3, 'b', '¿Por qué no valora hasta el primer punto equivalente?',
         'Porque los pKa del ácido oxálico (≈ 1,25 y 4,27) están cerca: el primer salto es muy poco nítido y no se detecta bien con un indicador. El segundo salto es grande y se ve claramente con fenolftaleína.'),
       q(3, 'c', 'Calcule el pH en el segundo punto equivalente (considere la especie presente en dicho punto y qué reacción sufre).',
         'En el 2º PE hay C2O4²⁻, una base débil: C2O4²⁻ + H2O ⇌ HC2O4⁻ + OH⁻, con Kb = Kw/Ka2 ≈ 1,9·10⁻¹⁰. [OH⁻] ≈ √(Kb·C); para C ≈ 0,03 mol/L, pOH ≈ 5,6 y pH ≈ 8,4 (zona básica).'),
-      q(3, 'd', 'Ecuación de cálculo de la concentración de NaOH (ilegible en el texto extraído).',
-        'C(NaOH) = 2·m(H2C2O4·2H2O)·(Assay/100)·1000 / (MM·G), porque n(NaOH) = 2·n(H2C2O4) al valorar hasta el 2º punto equivalente.',
-        { legible: false }),
+      q(3, 'd', 'Deducir la ecuación: C(NaOH) (mol/L) = 2·m(PP) (g)·(Assay (%)/100)·(V toma / V sol,PP) / [Gb (L)·MM(PP) (g/mol)]',
+        'Al valorar hasta el 2º punto equivalente, 2 NaOH + H2C2O4 → Na2C2O4 + 2 H2O, así que n(NaOH) = 2·n(H2C2O4). Los moles de patrón primario (PP) en el matraz de valoración son n(PP) = m(PP)·(Assay/100)/MM(PP)·(V toma/V sol,PP): el último factor es la fracción de la solución de PP que se toma con la pipeta (vale 1 si el PP se pesa directo en el Erlenmeyer). Como n(NaOH) = C·Gb, con Gb en litros: C(NaOH) = 2·m(PP)·(Assay/100)·(V toma/V sol,PP)/(Gb·MM(PP)).'),
       q(3, 'e', '¿Por qué puede detectar el 2do punto equivalente con Fenolftaleína?',
         'Porque el pH del 2º punto equivalente (≈ 8,4) cae dentro del intervalo de viraje de la fenolftaleína (8,3–10) y el salto de pH es grande.'),
       q(3, 'f', '¿Qué precaución se debe tener con las soluciones patrón secundario de NaOH?',
@@ -253,9 +254,8 @@ export const AUTOCONTROL: AutocontrolPractico[] = [
         'El potencial del electrodo indicador es la suma del potencial de frontera de la membrana (Eb, que depende del pH externo), el potencial del electrodo de referencia interno Ag/AgCl (constante) y el potencial de asimetría (pequeño, por diferencias entre las dos caras del vidrio; se corrige al calibrar).'),
       q(11, 'h', 'Explique la siguiente ecuación para una celda potenciométrica para medida de pH: Emedido = Eind – Eref + Ej',
         'El potencial que mide el pH-metro es la diferencia entre el electrodo indicador (vidrio) y el de referencia externo, más el potencial de unión líquida (Ej) en el contacto entre el puente salino y la muestra. Eref y Ej se suponen constantes y se absorben en la calibración.'),
-      q(11, 'i', 'Explique la siguiente ecuación: Ag(s)|AgCl(s)|Cl−(ac, sat)‖H+(ac, externa) ⋮ H+(ac, interna, 0,1M), Cl−(ac, sat)|AgCl(s)|Ag(s) (notación reconstruida del texto extraído)',
-        'Es la notación de la celda completa de medida de pH: a la izquierda el electrodo de referencia externo Ag/AgCl, la doble barra es la unión líquida, la línea punteada es la membrana de vidrio que separa la muestra (H⁺ externo) de la solución interna (H⁺ 0,1 M con Cl⁻), y a la derecha el electrodo de referencia interno Ag/AgCl. La única variable es el H⁺ externo.',
-        { legible: false }),
+      q(11, 'i', 'Explique la siguiente ecuación: Ag(s)|AgCl(s)|Cl−(ac, sat)‖H+(ac, exterior) ⋮ H+(ac, interior, 0,1M), Cl−(ac, sat)|AgCl(s)|Ag(s)',
+        'Es la notación de la celda completa de medida de pH: a la izquierda el electrodo de referencia externo Ag/AgCl, la doble barra es la unión líquida, la línea punteada es la membrana de vidrio que separa la muestra (H⁺ externo) de la solución interna (H⁺ 0,1 M con Cl⁻), y a la derecha el electrodo de referencia interno Ag/AgCl. La única variable es el H⁺ externo.'),
       q(11, 'j', 'Escriba la ecuación general que vincula el Emedido con el pH.',
         'E medido = K − (2,303·R·T/F)·pH, es decir E = K − 0,05916·pH (V) a 25 °C. K agrupa todos los términos constantes y se determina al calibrar con buffers.'),
       q(11, 'k', 'Describa los errores que aparecen en las medidas potenciométricas de pH y por qué se originan.',

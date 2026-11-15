@@ -3,18 +3,17 @@
 Lo que sigue no se completó en la app porque no está, o no se lee, en los documentos fuente. Se resuelve cuando el docente lo confirme.
 
 ## Práctico 11 (potenciometría de H₃PO₄ en bebida cola)
-- **Ecuaciones ilegibles:** en el texto extraído de la cuaderneta (págs. 38–39), la ecuación de la concentración de H₃PO₄ y la de la incertidumbre combinada no se leen.
-  - Concentración: la app usa c (ppm) = c(NaOH)·G·M(H₃PO₄)·1000/m, al 1er punto equivalente con relación 1:1.
-  - Incertidumbre: suma en cuadratura de las incertidumbres relativas de las variables de la tabla (c NaOH, Gb, MM y m).
-  - **A verificar con el PDF original** (Diego lo sube a `docs/fuentes/`).
-- **Sin ejemplo resuelto ni factor k:** el documento no trae un ejemplo numérico ni un factor de cobertura (informa "c ± u"). Hasta tener el ejemplo, la prueba "reproduce el resultado del documento" se reemplazó por una prueba contra la fórmula de propagación.
+- **Ecuaciones verificadas (15/11/2026)** contra el PDF de la cuaderneta 2026, pág. 39. La app ya usaba las mismas:
+  - Concentración: c (mg/kg) = c(NaOH) (mol/L)·Gb (L)·MM(H₃PO₄) (g/mol) / m muestra (g) · 10⁶. Es la de la app (c(NaOH)·G·M·1000/m) con el gasto en mL.
+  - Incertidumbre: u(c) = c·√[(u_cNaOH/cNaOH)² + (u_Gb/Gb)² + (u_MM/MM)² + (u_m/m)²], con Gb ±0,1 mL, MM 97,9956 ±0,00042 g/mol, m ±0,0002 g y u(c NaOH) = t·s/√n de la estandarización.
+- **Sin ejemplo resuelto ni factor k (confirmado en el PDF):** el documento no trae un ejemplo numérico y pide informar "(c ± u) ppm", sin factor de cobertura. La pestaña Potenciometría arranca con k = 2 y es editable (con k = 1, U = u). **A confirmar con el docente** si prefiere k = 1 por defecto.
 - **Datos precargados:** el valor de u(c NaOH) y los datos del ejemplo son ilustrativos.
 
 ## Calibración del pH-metro
 - El criterio "cumple si la pendiente ≥ 95 %" no aparece en los documentos: lo indicó Diego. Es editable.
 
 ## 1ª Revisión Práctica
-- En la tabla de criterios no se lee el σR del agente valorante para ZnSO₄·7H₂O ni para la dureza total (las dos valoraciones con EDTA). Se dejó vacío.
+- Verificado en el PDF: en la tabla de criterios, la celda de σR del agente valorante está **vacía en el documento** (no es un problema de lectura) para ZnSO₄·7H₂O y para la dureza total, las dos valoraciones con EDTA. La cuaderneta tampoco da un σr para EDTA (el Práctico 6 dice que no hay información histórica y usa Dixon). Se deja vacío hasta que el docente indique un criterio.
 
 ## 2ª Revisión Práctica
 - Solo hay sugerencias de diagramación para los problemas 1, 2 y 4: no se agregaron sugerencias para los demás.
@@ -25,9 +24,9 @@ Lo que sigue no se completó en la app porque no está, o no se lee, en los docu
 - La cuaderneta trae solo las preguntas, sin respuestas. Las respuestas modelo de la app son **borradores a validar por el docente**.
 - El Teórico 1 indica 5 puntos de Preguntas Previas en prácticas individuales y 7 en grupales, pero no dice qué prácticas son grupales.
 - El **Práctico 10** (humedad de yerba mate) no tiene preguntas de autocontrol en la cuaderneta.
-- **Ecuaciones o figuras ilegibles** en el texto extraído (marcadas `legible: false` en `src/data/autocontrol.ts`):
-  - Práctico 2, pregunta a): la ecuación a deducir se reconstruyó como C(HCl) = 2·m·(Assay/100)·1000/(MM·G).
-  - Práctico 3, pregunta a): la figura de la curva con los puntos A a F.
-  - Práctico 3, pregunta d): el enunciado es una ecuación ilegible.
-  - Práctico 11, pregunta i): la notación de la celda se reconstruyó.
+- **Ecuaciones y figuras que no se leían: resueltas (15/11/2026)** con el PDF de la cuaderneta. Ya no hay preguntas marcadas `legible: false`:
+  - Práctico 2, a) (pág. 11): C(HCl) = 2·m·(Assay/100)/(MM·G), con G en litros.
+  - Práctico 3, a) (pág. 14): se agregó la figura de la curva (`public/autocontrol/p3-curva.png`) y la respuesta borrador asigna cada letra A a F.
+  - Práctico 3, d) (pág. 15): C(NaOH) = 2·m(PP)·(Assay/100)·(V toma/V sol,PP)/(Gb·MM(PP)). La reconstrucción anterior no tenía el factor de la toma.
+  - Práctico 11, i) (pág. 40): notación de la celda copiada del original.
 - Para validar una respuesta, el docente edita `src/data/autocontrol.ts` y pone `validada: true`; la app deja de mostrar "borrador".

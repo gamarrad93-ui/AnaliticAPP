@@ -3,8 +3,6 @@ import { APP_NAME, AUTHOR, COURSE, PROFESSOR } from './config';
 import { useDisplay } from './ui/display';
 
 // Cada pestaña se carga sólo cuando se abre (la app inicia más rápido en el celular)
-const PracticesTab = lazy(() => import('./ui/tabs/PracticesTab'));
-const EntregasTab = lazy(() => import('./ui/tabs/EntregasTab'));
 const TitrationTab = lazy(() => import('./ui/tabs/TitrationTab'));
 const SpeciesTab = lazy(() => import('./ui/tabs/SpeciesTab'));
 const CalibrationTab = lazy(() => import('./ui/tabs/CalibrationTab'));
@@ -19,8 +17,6 @@ const HumidityTab = lazy(() => import('./ui/tabs/HumidityTab'));
 const AboutTab = lazy(() => import('./ui/tabs/AboutTab'));
 
 const TABS = [
-  { id: 'practicos', label: 'Prácticos', icon: '🧫', C: PracticesTab },
-  { id: 'entregas', label: 'Entregas', icon: '📝', C: EntregasTab },
   { id: 'revision', label: 'Revisión práctica', icon: '🎲', C: RevisionTab },
   { id: 'titulaciones', label: 'Titulaciones', icon: '🧪', C: TitrationTab },
   { id: 'especies', label: 'Especies y buffers', icon: '📊', C: SpeciesTab },
@@ -40,7 +36,7 @@ type TabId = (typeof TABS)[number]['id'];
 /** La pestaña activa queda en la URL (#calibracion) para poder compartir el link directo. */
 function tabFromHash(): TabId {
   const h = window.location.hash.replace('#', '').split('?')[0];
-  return (TABS.find((t) => t.id === h)?.id ?? 'practicos') as TabId;
+  return (TABS.find((t) => t.id === h)?.id ?? TABS[0].id) as TabId;
 }
 
 export default function App() {

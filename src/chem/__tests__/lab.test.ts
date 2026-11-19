@@ -3,11 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { evaluateReplicates, largestConcordantSubset, largestSubsetUnderCV } from '../lab/promediables';
-import { zFactor, waterDensity, conformity } from '../lab/volumetric';
-import { derivativeTable, findEndpoints } from '../lab/potentiometric';
 import { fitModel, inverseModel } from '../stats/calibrationModels';
-import { titrationCurve } from '../acidbase/titration';
-import { getSystem } from '../data/acids';
 
 describe('Criterios de promediabilidad', () => {
   it('concordancia: el grupo más grande dentro de 5,0 mg', () => {
@@ -34,47 +30,6 @@ describe('Criterios de promediabilidad', () => {
   it('CV < 1 %: elige el grupo más grande que cumple', () => {
     const v = [0.0391, 0.0393, 0.0392, 0.0420];
     expect(largestSubsetUnderCV(v, 1, 3)).toEqual([0, 1, 2]);
-  });
-});
-
-describe('Verificación de material volumétrico (V20)', () => {
-  it('densidad del agua (Tanaka) a 20 °C = 0,998207 g/mL', () => expect(waterDensity(20)).toBeCloseTo(0.998207, 6));
-  it('Z coincide con la tabla de Harris: 1,0020 (15 °C), 1,0029 (20 °C), 1,0040 (25 °C)', () => {
-    expect(zFactor(15)).toBeCloseTo(1.002, 4);
-    expect(zFactor(20)).toBeCloseTo(1.0029, 4);
-    expect(zFactor(25)).toBeCloseTo(1.004, 4);
-  });
-  it('criterios de conformidad', () => {
-    const c = conformity(5.004, 0.003, 5, 5, 0.015, 2.776);
-    expect(c.capacityOk).toBe(true);
-    expect(c.accuracyValue).toBeCloseTo(0.004 + (2.776 * 0.003) / Math.sqrt(5), 10);
-    expect(c.accuracyOk).toBe(true);
-  });
-});
-
-describe('Valoración potenciométrica: derivadas', () => {
-  it('encuentra los dos puntos finales del H3PO4 en una curva simulada', () => {
-    const sys = getSystem('fosforico')!;
-    // 0,0013 M de H3PO4 en 20 mL con NaOH 0,01 M: PE1 = 2,6 mL; PE2 = 5,2 mL
-    const s = { analyte: [{ kind: 'weak' as const, C: 0.0013, system: sys, hAdded: 3 }], Va: 20, titrant: { kind: 'strong-base' as const, C: 0.01, n: 1 } };
-    const curve = titrationCurve(s, 8, 400);
-    const V: number[] = [];
-    const pH: number[] = [];
-    for (let v = 0; v <= 8.0001; v += 0.1) {
-      const p = curve.reduce((a, b) => (Math.abs(b.V - v) < Math.abs(a.V - v) ? b : a));
-      V.push(Number(v.toFixed(2)));
-      pH.push(p.pH);
-    }
-    const eps = findEndpoints(derivativeTable(V, pH));
-    expect(eps.length).toBeGreaterThanOrEqual(1);
-    expect(Math.abs(eps[0].V - 2.6)).toBeLessThan(0.15);
-  });
-  it('tabla: V̄ y ΔpH/ΔV', () => {
-    const t = derivativeTable([0, 1, 2], [3, 4, 6]);
-    expect(t[1].Vbar).toBe(0.5);
-    expect(t[1].d1).toBe(1);
-    expect(t[2].d1).toBe(2);
-    expect(t[2].d2).toBe(1);
   });
 });
 

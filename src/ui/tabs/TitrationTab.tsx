@@ -87,7 +87,7 @@ function AnalyteInputs({ a, title }: { a: AnalyteState; title: string }) {
   );
 }
 
-/** Parámetros opcionales en la URL (#titulaciones?a=Na2CO3&ca=0,05&va=20&t=HCl&ct=0,25&ind=…&pe=2), usados por "Prácticos". */
+/** Parámetros opcionales en la URL (#titulaciones?a=Na2CO3&ca=0,05&va=20&t=HCl&ct=0,25&ind=…&pe=2) para compartir un caso. */
 function urlParams() {
   const q = new URLSearchParams(window.location.hash.split('?')[1] ?? '');
   const num = (k: string) => (q.get(k) ? q.get(k)!.replace('.', ',') : null);

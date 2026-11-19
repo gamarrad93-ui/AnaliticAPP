@@ -19,17 +19,6 @@ export default function AboutTab() {
         </p>
       </Sec>
 
-      <Sec title="Prácticos de laboratorio">
-        <p>
-          La pestaña <strong>Prácticos</strong> cubre los 13 prácticos de laboratorio: para cada uno calcula la diagramación (las tomas para un gasto de ≈ 8 mL en bureta de 10,00 mL),
-          el resultado de cada determinación con la ecuación del práctico y el tratamiento estadístico con el criterio de cada práctico (intervalo de repetibilidad Ir = 2,8·σr y CAI = 1,96·σr/√n cuando σr es conocido;
-          test Q de Dixon o CV máximo y CAI = t·s/√n en los demás). También verifica especificaciones (USP, Reglamento Bromatológico Nacional).
-        </p>
-        <p>
-          Los datos precargados son <strong>de ejemplo</strong>: cada estudiante reemplaza con sus masas, gastos corregidos y V20.
-        </p>
-      </Sec>
-
       <Sec title="Equilibrio ácido-base: modelo exacto">
         <p>
           El pH se calcula resolviendo el <strong>balance de carga completo</strong> junto con los balances de masa de cada especie, <strong>sin aproximaciones</strong>
@@ -104,14 +93,6 @@ export default function AboutTab() {
         </p>
       </Sec>
 
-      <Sec title="Revisión práctica y autocontrol">
-        <p>
-          Los problemas, criterios y preguntas se cargaron de los documentos del curso, sin agregar contenido. La solución de referencia de cada problema la calcula el motor
-          (estequiometría, tomas y gasto teórico, pH en el punto equivalente con el motor ácido-base exacto). Veredicto: 1ª RP con σR (Ir = 2,8·σR), Dixon o Grubbs y CV;
-          2ª RP con CV ideal/aceptable y CV &lt; 10 % en espectrofotometría. Las respuestas modelo del autocontrol son borradores a validar por el docente.
-        </p>
-      </Sec>
-
       <Sec title="Potenciometría">
         <p>
           Tabla del informe: Ḡ = (G<sub>i</sub> + G<sub>i+1</sub>)/2, 1ª derivada ΔpH/ΔG, Ḡ̄ y 2ª derivada. Punto de equivalencia por tres métodos: máximo de la 1ª derivada (con refinamiento opcional por una parábola),
@@ -124,14 +105,7 @@ export default function AboutTab() {
         <p>
           Masa molar con los pesos atómicos estándar abreviados de IUPAC. El lector de fórmulas acepta paréntesis y corchetes, hidratos con "·" o "." y cargas (que se ignoran).
           Factor gravimétrico F = a·M(buscada)/(b·M(pesada)): a y b se obtienen igualando los átomos del elemento común (sin contar O ni H, salvo que sean el único), y se pueden corregir a mano.
-          % m/m = m(precipitado)·F·f(alícuota)/m(muestra)·100. Peso constante: dos pesadas consecutivas que difieren a lo sumo 0,3 mg (configurable).
-        </p>
-      </Sec>
-
-      <Sec title="Humedad y base seca">
-        <p>
-          %H b.h. = (m<sub>h</sub> − m<sub>s</sub>)/m<sub>h</sub>·100; %H b.s. = (m<sub>h</sub> − m<sub>s</sub>)/m<sub>s</sub>·100; % materia seca = 100 − %H b.h.
-          Conversiones: X<sub>bs</sub> = X<sub>bh</sub>/(1 − H/100); H<sub>bs</sub> = H<sub>bh</sub>/(100 − H<sub>bh</sub>)·100; X<sub>2</sub> = X<sub>1</sub>·(100 − H<sub>2</sub>)/(100 − H<sub>1</sub>).
+          Incluye una tabla de factores clásicos (BaSO₄ → S, Fe₂O₃ → Fe, AgCl → Cl, entre otros).
         </p>
       </Sec>
 

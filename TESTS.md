@@ -201,110 +201,9 @@ Coinciden con 11–12 decimales (el modelo ponderado 1/x² se quitó a pedido de
 - Patrón de residuos: una forma de U se detecta; residuos al azar no.
 - Mejor modelo: con datos curvos se elige el cuadrático; con los datos lineales de libro se elige el lineal (el cuadrático mejora el R² ajustado en menos de 0,0005, y ante esa diferencia se prefiere el modelo más simple).
 
-## 4. Prácticos de laboratorio (`src/chem/__tests__/lab.test.ts`)
-
-Fórmulas y criterios tomados de la **Cuaderneta de Ejercicios de Laboratorio 2026** (UTU – UdelaR – UTEC).
-
-### Criterios de promediabilidad
-- Concordancia (ej. 5,0 mg en V20): se elige el grupo más grande de valores dentro del límite.
-- σr conocido (HCl/NaOH σr = 0,00030 M; KMnO₄ 5,1 × 10⁻⁵ M; H₂O₂ 0,025 vol): Ir = 2,8·σr; CAI = 1,96·σr/√n.
-- Q de Dixon (α = 0,05) y CAI = t(95 %, n−1)·s/√n.
-- CV máximo (1 %, 5 % o 10 % según el práctico), con mínimo de valores.
-
-### Diagramaciones verificadas a mano
-| Práctico | Caso | Resultado |
-|---|---|---|
-| 2 | Na₂CO₃ para 8 mL de HCl 0,250 M | 0,1060 g |
-| 2 | HCl conc. (37 %, 1,18 g/mL) para 1000 mL 0,250 M | 20,9 mL |
-| 3 | H₂C₂O₄·2H₂O para 8 mL de NaOH 0,1 M | 0,0504 g → conviene alícuota |
-| 4 | ácido cítrico·H₂O puro con 8,00 mL de NaOH 0,1 M | 100 % |
-| 5 | V_T para G1 = 3 mL (0,075 M CO₃²⁻; HCl 0,125 M) | 5,0 mL; G2 = 8 mL |
-| 6 | 0,1000 g Ni, blanco 8 mL, retro 2 mL | C(Mg) = 0,0634 M |
-| 7 | H₂O₂ 10 vol, KMnO₄ 0,02 M, 8 mL | 0,448 mL de muestra |
-| 8 | KIO₃ para 8 mL de tiosulfato 0,05 M; I₂ 1 % p-v | 0,01427 g; 5,08 mL |
-| 9 | Volhard: blanco y toma | 10,00 mL AgNO₃; 5,00 mL KBr |
-| 10 | Ejemplo de la cuaderneta (3,2989 g → 2,7690 g) | 16,1 % humedad |
-| 11 | Cola con 600 ppm para 13 mL de NaOH 0,01 M | 21,23 g |
-| 13 | Rango de Beer (A 0,020–0,700; ε 11 100) | 0,10–3,52 ppm Fe |
-
-### Otras herramientas
-- **Factor Z (V20)**: densidad del agua de Tanaka (2001), empuje del aire y dilatación del vidrio; coincide con la tabla de Harris (1,0020 a 15 °C; 1,0029 a 20 °C; 1,0040 a 25 °C).
-- **Criterios de conformidad** del material volumétrico: s/√n ≤ tol/3 y |V20 − Vnom| + t·s/√n ≤ tol.
-- **Derivadas de la valoración potenciométrica**: tabla V̄, ΔpH/ΔV, V̿, Δ²; el punto final se encuentra en una curva de H₃PO₄ simulada con el motor exacto (±0,15 mL).
-- **4 modelos de calibración** (lineal y cuadrático, con y sin ordenada) con los datos del ejercicio de Cr de la cuaderneta: coeficientes, R² y s de residuos iguales a `numpy.linalg.lstsq` (12 decimales).
-
 ---
 
-## 5. Entregas de prácticos (`src/chem/__tests__/practicos.test.ts`)
-
-Motor de corrección de las planillas (TypeScript puro en `src/chem/practicos/`, reutilizable con un servidor).
-
-### Datos de referencia verificados
-| Dato | Valor usado | Fuente / verificación |
-|---|---|---|
-| M(Na₂CO₃) | 105,99 g/mol | Pesos atómicos estándar IUPAC: 2·22,990 + 12,011 + 3·15,999 = 105,988 |
-| M(H₂C₂O₄·2H₂O) | 126,07 g/mol | IUPAC 2021 da 126,064; 126,07 es el valor con pesos atómicos anteriores (diferencia 0,005 %) |
-| M(C₆H₈O₇·H₂O) | 210,14 g/mol | 6·12,011 + 10·1,008 + 8·15,999 = 210,138 |
-| M(NiSO₄·6H₂O) | 262,85 g/mol | IUPAC 2021 da 262,84 (diferencia 0,004 %) |
-| M(MgSO₄·7H₂O) | 246,47 g/mol | 24,305 + 32,06 + 11·15,999 + 14·1,008 = 246,466 |
-| M(KIO₃) | 214,00 g/mol | 39,098 + 126,90 + 3·15,999 = 213,995 |
-| 2 HCl : 1 Na₂CO₃ | r = 2 | Na₂CO₃ + 2 HCl → 2 NaCl + CO₂ + H₂O (punto final con verde de bromocresol) |
-| 2 NaOH : 1 H₂C₂O₄ | r = 2 | H₂C₂O₄ + 2 OH⁻ → C₂O₄²⁻ + 2 H₂O |
-| t(95 %, ν) bilateral | 12,706 · 4,303 · 3,182 · 2,776 · 2,571 · 2,447 · 2,365 · 2,306 · 2,262 (ν = 1…9) | Tabla de t de Student (Harris; Miller & Miller); calculado con la distribución t |
-| Q crítico 95 % | 0,970 · 0,829 · 0,710 · 0,625 · 0,568 · 0,526 · 0,493 · 0,466 (n = 3…10) | Rorabacher, Anal. Chem. 1991, 63, 139 |
-| G crítico 95 % (Grubbs, bilateral) | 1,155 · 1,481 · 1,715 · 1,887 · 2,020 · 2,126 · 2,215 · 2,290 (n = 3…10) | ASTM E178; calculado con la distribución t (±0,001) |
-| Factor Z | Z = 1/(ρW − ρA)·(1 − ρA/ρB)·[1 − γ(t − 20)] | Fórmula de ISO 4787 con ρW de Tanaka (2001), ρA (CIPM simplificada, 50 % HR), ρB = 8,0 g/mL, γ = 1,0 × 10⁻⁵ °C⁻¹ |
-
-**Tabla Z.** El texto de ISO 4787 es pago y no se pudo descargar desde el entorno de trabajo, así que la tabla (15–30 °C × 800–1050 hPa) se **calcula con la fórmula de la norma**. A 1013 hPa coincide con la tabla de Harris en los 16 valores de 15 a 30 °C (diferencia ≤ 0,00015 mL/g). Ejemplos: 1,0020 a 15 °C, 1,0029 a 20 °C y 1,0040 a 25 °C. **Conviene que el docente la compare con la tabla impresa del curso**: se puede editar en *Profesor → Ajustes → Tabla Z*.
-
-### Corrección de bureta (criterio del docente)
-Se usa el tramo cuyo nominal (2, 4, 6, 8 o 10 mL) está **más cerca** de la lectura G: corrección = V20(tramo) − nominal, G corregido = G + corrección. En un empate exacto (3, 5, 7 o 9 mL) se usa el tramo mayor. Ejemplos probados:
-- B1001, G = 8,01 → tramo 0–8 (V20 8,02) → +0,02 → **8,03 mL**
-- B1011, G = 8,40 → tramo 0–8 (V20 7,96) → −0,04 → **8,36 mL**
-- G = 4,9 → tramo 0–4; G = 7,2 → 0–8; G = 9,1 → 0–10
-
-### Ejemplos resueltos a mano
-**P2.** Datos: m = 0,0425 g de Na₂CO₃, assay 99,8 %, G = 8,01 mL en la bureta B1001-26.
-- G corregido = 8,01 + 0,02 = 8,03 mL
-- C = 2·0,0425·0,998·1000 / (105,99·8,03) = 84,83 / 851,10 = **0,09967 mol/L**
-
-**P3.** Datos: m = 0,5104 g de H₂C₂O₄·2H₂O, assay 99,5 %, matraz MA10005-26 (V20 100,06 mL), pipeta PA1013-26 (V20 10,04 mL), G = 8,03 mL en la bureta B1005-26.
-- G corregido = 8,03 + 0,02 = 8,05 mL
-- Factor de alícuota = 10,04 / 100,06 = 0,100340
-- C = 2·0,5104·0,995·0,100340·1000 / (126,07·8,05) = 101,915 / 1014,86 = **0,10042 mol/L**
-
-**P1.** Datos: pipeta PA1005-26 a 20 °C y 1013 hPa, con Z = 1,0029 mL/g.
-- V20 = m·Z
-- Vref = 10,02 mL (tabla Lab QA)
-- Criterio 1: s/√n ≤ Tol/3
-- Criterio 2: |V̄20 − Vref| + t·s/√n ≤ Tol, con la tolerancia que escribió el alumno
-
-**Bureta en P1.** Para B1003-26, tramo 0–8: Vref = 8,00 mL (V20 de ese tramo).
-
-**Promediabilidad.** Para 0,1012 · 0,1013 · 0,1011 · 0,1030, el Q de Dixon da Q = 0,0017/0,0019 = 0,895 > 0,829, así que se descarta 0,1030.
-
-### Corrección y diagnóstico
-- **Tolerancias por defecto:**
-  - valores: ± 0,1 % relativo;
-  - s, CV, t·s/√n e incertidumbre: ± 5 % relativo.
-  - Las dos se pueden cambiar a modo absoluto o a cifras significativas. En «N cifras» se acepta hasta 1 unidad en la N-ésima cifra.
-- **Cómo se diagnostica:** el motor recalcula la entrega con cada error típico y ve cuál reproduce el número del alumno. Los errores que prueba son:
-  - V nominal en vez de V20;
-  - sin corrección de bureta, tramo mayor o menor, o la corrección restada;
-  - relación 1:1 o invertida;
-  - alícuota omitida o invertida;
-  - assay sin aplicar;
-  - todas las determinaciones promediadas, o las marcadas por el alumno;
-  - t con n grados de libertad, z = 1,96 en vez de t, o t·s en vez de t·s/√n;
-  - en P1: Z a 20 °C, Z = 1/ρ(agua) o Vref nominal.
-- **Qué se informa:** solo los diagnósticos que explican al menos la mitad de los campos que explica el principal. Así se descartan las coincidencias numéricas aisladas.
-- **Pruebas con los 12 alumnos de ejemplo:**
-  - los correctos tienen todos los campos bien;
-  - en cada uno de los demás, el diagnóstico principal es el error que se le introdujo.
-
----
-
-## 6. Gravimetría y humedad (`src/chem/__tests__/gravimetria.test.ts`)
+## 4. Gravimetría: masa molar y factor gravimétrico (`src/chem/__tests__/gravimetria.test.ts`)
 
 **Pesos atómicos usados** (`src/chem/gravimetria/elementos.ts`): tabla de pesos atómicos estándar abreviados de IUPAC/CIAAW, a 5 cifras significativas. Para los elementos que tienen intervalo, se usa el valor convencional.
 El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los valores se contrastaron con la tabla abreviada vigente (2021–2023) tal como se publica. Las masas molares de control salen idénticas a las de los textos usuales: BaSO₄ 233,39, AgCl 143,32, Fe₂O₃ 159,69, Mg₂P₂O₇ 222,55.
@@ -329,8 +228,6 @@ El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los
 | F Mg₂P₂O₇ → P₂O₅ | ≈ 0,6377 | 0,637800 (*) |
 | F AgCl → Cl | ≈ 0,2474 | 0,247349 |
 | F Ni(C₄H₇N₂O₂)₂ → Ni | ≈ 0,2032 | 0,203148 |
-| Humedad: 10,000 g húmeda → 8,000 g seca | 20,00 % b.h.; 25,00 % b.s. | 20,00 %; 25,00 %; materia seca 80,00 % |
-| 5,00 % (b.h.) con H = 20 % | 6,25 % b.s. | 6,25 % (y la vuelta da 5,00 %) |
 
 (*) Con los pesos atómicos actuales da 0,63780. El 0,6377 de muchas tablas viene de pesos atómicos más viejos. Se acepta una diferencia de hasta 0,0001.
 
@@ -341,29 +238,17 @@ El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los
   - Subíndices Unicode. Las cargas se ignoran (SO₄²⁻, SO4 2-, SO4^2-, PO4(3-), Cl-, NH4+).
   - La composición porcentual suma 100.
   - Errores claros: símbolo inexistente, paréntesis sin cerrar o de más, minúsculas, "·" sin nada después, caracteres raros.
-  - Todas las fórmulas de la biblioteca se leen sin error.
+  - Todas las fórmulas de la biblioteca (sugerencias de "Lo que tengo / Lo que quiero") se leen sin error.
 - **a y b automáticos:**
   - Fe₃O₄ → Fe₂O₃ da 3/2; Mg₂P₂O₇ → MgO da 2/1; (NH₄)₃PO₄·12MoO₃ → P₂O₅ da 1/2.
   - En BaSO₄ → SO₃ el elemento común es S, no O: O e H se descartan salvo que sean el único elemento común.
   - Con varios elementos comunes (K₂PtCl₆ → KCl) se puede elegir: K da 1/1, Cl da 6/1.
   - a y b se pueden corregir a mano.
   - Todos los factores de la tabla clásica tienen elemento común.
-- **Cálculo de una réplica:** m = m(pp)·F·f(alícuota) y % = m/m(muestra)·100. Ejemplo: 0,4321 g de BaSO₄ en 0,5000 g de muestra dan 29,646 % de SO₃.
-- **Peso constante:** dos pesadas consecutivas con diferencia ≤ 0,3 mg (configurable). Se informa en qué pesada se alcanzó y la masa final.
-- **Conversiones de humedad:**
-  - H b.h. 20 % ↔ H b.s. 25 %.
-  - X₂ = X₁·(100 − H₂)/(100 − H₁).
-  - Errores si la masa seca supera a la húmeda o si H ≥ 100 %.
-
-**Ejemplo mixto** (pestaña "Humedad y base seca"):
-- Humedad en tres réplicas: 9,02 %, 9,01 % y 9,01 % (media 9,01 % b.h.).
-- Sulfato como BaSO₄ (F → SO₃ = 0,34302): 29,59 %, 29,52 % y 29,68 % de SO₃ tal cual.
-- Resultado: 29,60 % de SO₃ en base húmeda y 32,53 % en base seca.
-- La cuenta se verificó a mano con Python.
 
 ---
 
-## 7. Potenciometría (`src/chem/__tests__/potenciometria.test.ts`)
+## 5. Potenciometría (`src/chem/__tests__/potenciometria.test.ts`)
 
 **Tabla del informe.** Las columnas son las de la cuaderneta:
 - Ḡᵢ = (Gᵢ + Gᵢ₊₁)/2 y d1 = ΔpH/ΔG.
@@ -394,67 +279,6 @@ El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los
 - El motor general (derivadas numéricas) coincide con la fórmula de las incertidumbres relativas en cuadratura para c = c(NaOH)·G·M·1000/m.
 - Los porcentajes de contribución suman 100 % y U = k·u_c.
 - La comparación con el ejemplo del documento queda pendiente (ver PENDIENTES.md).
-
----
-
-## 8. Revisión práctica (`src/chem/__tests__/revision.test.ts`)
-
-**Datos.** Los problemas, los criterios y los textos están en `src/data/revision-practica.ts`, copiados literalmente de la letra de cada revisión: 14 problemas en la 1ª y 7 en la 2ª. La diagramación dura 20 min en la 1ª y 25 min en la 2ª.
-
-**Un problema por revisión, verificado a mano:**
-- **1ª RP, problema 1 (NaHCO₃, pureza 95 %).** HCl 0,25 M, G = 8,00 mL → n = 2,000·10⁻³ mol.
-  - Na₂CO₃ = 1,000·10⁻³ mol × 105,99 = **0,10599 g**.
-  - NaHCO₃ = 2,000·10⁻³ × 84,007 / 0,95 = **0,17686 g**.
-  - pH en el PE (motor exacto): entre 3,5 y 5, por eso heliantina.
-- **1ª RP, problema 7 (dureza, 1060 mg CaCO₃/L).** EDTA 0,02 M, G = 8,00 mL → 1,6·10⁻⁴ mol = 16,01 mg de CaCO₃ → **15,10 mL** de agua.
-- **2ª RP:** los valores coinciden con la planilla "Revisión práctica 2026 (P1 a P7)".
-
-| Problema | Valor | App |
-|---|---|---|
-| 1 ácido ascórbico | Na₂S₂O₃ para G blanco = 8 mL | 0,2500 M |
-| | KIO₃ por estandarización | 0,07133 g |
-| | ácido ascórbico para G retro = 2 mL | 0,13209 g |
-| 2 NaClO | Na₂S₂O₃ para G = 8 mL con 1,00 mL | 0,14104 M |
-| | KIO₃ | 0,04024 g |
-| | KI (1,5×) | 0,2810 g |
-| | H₂SO₄ 1:4 (1,5×) | 0,2351 mL |
-| 3 MgCl₂·6H₂O | NaCl | 0,04675 g |
-| | muestra (98 %) | 0,08298 g |
-| 4 KSCN | alícuota para G(AgNO₃) = 8 mL | 6,40 mL |
-| 5 ácido cítrico | G al PE (z = 3, 1 mL) | 30,00 mL |
-| | H₂C₂O₄·2H₂O para G = 10 mL | 0,006303 g |
-| 6 paracetamol | solución problema | 4000 mg/L |
-| | factor de dilución | 400 |
-| 7 Fe²⁺ | Fe en la solución problema | 25 112 mg/L |
-| | factor de dilución | 12 556 |
-
-**Sorteo:**
-- El mismo código da siempre los mismos valores.
-- Las concentraciones "reales" quedan dentro de ±4 % de la nominal.
-- Las purezas quedan por encima del mínimo declarado.
-
-**Veredicto con los criterios oficiales:**
-- **1ª RP:**
-  - Ir = 2,8·σR. Con 0,2512, 0,2515, 0,2509 y 0,2540 se descarta 0,2540, y CAI = 1,96·σR/√3.
-  - Dixon: con 99,1, 99,3, 99,2 y 97,0 queda Q = 0,913 > 0,829 y se descarta 97,0.
-  - Si la tabla no trae σR (EDTA: ZnSO₄ y dureza), el agente valorante usa el criterio indicado por el docente: sin anómalos (Dixon o Grubbs) y CV < 2 %. Sin ese dato queda "sin criterio".
-- **2ª RP:**
-  - Estandarización: ideal con CV < 0,5 %, aceptable con CV < 1 %, y "no cumple" por encima.
-  - Espectrofotometría: CV < 10 %.
-
-**Valores críticos:**
-- Q de Dixon al 95 % (n = 3 a 10): 0,970, 0,829, 0,710, 0,625, 0,568, 0,526, 0,493 y 0,466. Coinciden con la tabla de Rorabacher (1991).
-- G de Grubbs bilateral con α = 0,05 (n = 3, 4, 5, 6, 7, 8 y 10): 1,1543, 1,4812, 1,7150, 1,8871, 2,0200, 2,1266 y 2,2900. Coinciden con ASTM E178 y con NIST (calculados a partir de la distribución t).
-
----
-
-## 9. Preguntas de autocontrol (`src/chem/__tests__/autocontrol.test.ts`)
-
-- Las preguntas de `src/data/autocontrol.ts` están copiadas de la cuaderneta:
-  - Cantidad por práctico: 9, 7, 9, 5, 5, 8, 8, 10, 9, (P10: ninguna), 13, 11 y 4.
-  - Los identificadores no se repiten y las letras están en orden.
-- Las respuestas modelo son **borradores a validar por el docente** (ver PENDIENTES.md).
-- El puntaje de las Preguntas Previas (5 en individual y 7 en grupal, sobre 12) es el del Teórico 1.
 
 ---
 

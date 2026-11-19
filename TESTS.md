@@ -201,7 +201,7 @@ Coinciden con 11–12 decimales (el modelo ponderado 1/x² se quitó a pedido de
 - Patrón de residuos: una forma de U se detecta; residuos al azar no.
 - Mejor modelo: con datos curvos se elige el cuadrático; con los datos lineales de libro se elige el lineal (el cuadrático mejora el R² ajustado en menos de 0,0005, y ante esa diferencia se prefiere el modelo más simple).
 
-## 4. Prácticos de laboratorio (`src/chem/__tests__/lab.test.ts`)
+## 4. Fórmulas de laboratorio (`src/chem/__tests__/lab.test.ts`)
 
 Fórmulas y criterios tomados de la **Cuaderneta de Ejercicios de Laboratorio 2026** (UTU – UdelaR – UTEC).
 
@@ -228,79 +228,7 @@ Fórmulas y criterios tomados de la **Cuaderneta de Ejercicios de Laboratorio 20
 | 13 | Rango de Beer (A 0,020–0,700; ε 11 100) | 0,10–3,52 ppm Fe |
 
 ### Otras herramientas
-- **Factor Z (V20)**: densidad del agua de Tanaka (2001), empuje del aire y dilatación del vidrio; coincide con la tabla de Harris (1,0020 a 15 °C; 1,0029 a 20 °C; 1,0040 a 25 °C).
-- **Criterios de conformidad** del material volumétrico: s/√n ≤ tol/3 y |V20 − Vnom| + t·s/√n ≤ tol.
-- **Derivadas de la valoración potenciométrica**: tabla V̄, ΔpH/ΔV, V̿, Δ²; el punto final se encuentra en una curva de H₃PO₄ simulada con el motor exacto (±0,15 mL).
 - **4 modelos de calibración** (lineal y cuadrático, con y sin ordenada) con los datos del ejercicio de Cr de la cuaderneta: coeficientes, R² y s de residuos iguales a `numpy.linalg.lstsq` (12 decimales).
-
----
-
-## 5. Entregas de prácticos (`src/chem/__tests__/practicos.test.ts`)
-
-Motor de corrección de las planillas (TypeScript puro en `src/chem/practicos/`, reutilizable con un servidor).
-
-### Datos de referencia verificados
-| Dato | Valor usado | Fuente / verificación |
-|---|---|---|
-| M(Na₂CO₃) | 105,99 g/mol | Pesos atómicos estándar IUPAC: 2·22,990 + 12,011 + 3·15,999 = 105,988 |
-| M(H₂C₂O₄·2H₂O) | 126,07 g/mol | IUPAC 2021 da 126,064; 126,07 es el valor con pesos atómicos anteriores (diferencia 0,005 %) |
-| M(C₆H₈O₇·H₂O) | 210,14 g/mol | 6·12,011 + 10·1,008 + 8·15,999 = 210,138 |
-| M(NiSO₄·6H₂O) | 262,85 g/mol | IUPAC 2021 da 262,84 (diferencia 0,004 %) |
-| M(MgSO₄·7H₂O) | 246,47 g/mol | 24,305 + 32,06 + 11·15,999 + 14·1,008 = 246,466 |
-| M(KIO₃) | 214,00 g/mol | 39,098 + 126,90 + 3·15,999 = 213,995 |
-| 2 HCl : 1 Na₂CO₃ | r = 2 | Na₂CO₃ + 2 HCl → 2 NaCl + CO₂ + H₂O (punto final con verde de bromocresol) |
-| 2 NaOH : 1 H₂C₂O₄ | r = 2 | H₂C₂O₄ + 2 OH⁻ → C₂O₄²⁻ + 2 H₂O |
-| t(95 %, ν) bilateral | 12,706 · 4,303 · 3,182 · 2,776 · 2,571 · 2,447 · 2,365 · 2,306 · 2,262 (ν = 1…9) | Tabla de t de Student (Harris; Miller & Miller); calculado con la distribución t |
-| Q crítico 95 % | 0,970 · 0,829 · 0,710 · 0,625 · 0,568 · 0,526 · 0,493 · 0,466 (n = 3…10) | Rorabacher, Anal. Chem. 1991, 63, 139 |
-| G crítico 95 % (Grubbs, bilateral) | 1,155 · 1,481 · 1,715 · 1,887 · 2,020 · 2,126 · 2,215 · 2,290 (n = 3…10) | ASTM E178; calculado con la distribución t (±0,001) |
-| Factor Z | Z = 1/(ρW − ρA)·(1 − ρA/ρB)·[1 − γ(t − 20)] | Fórmula de ISO 4787 con ρW de Tanaka (2001), ρA (CIPM simplificada, 50 % HR), ρB = 8,0 g/mL, γ = 1,0 × 10⁻⁵ °C⁻¹ |
-
-**Tabla Z.** El texto de ISO 4787 es pago y no se pudo descargar desde el entorno de trabajo, así que la tabla (15–30 °C × 800–1050 hPa) se **calcula con la fórmula de la norma**. A 1013 hPa coincide con la tabla de Harris en los 16 valores de 15 a 30 °C (diferencia ≤ 0,00015 mL/g). Ejemplos: 1,0020 a 15 °C, 1,0029 a 20 °C y 1,0040 a 25 °C. **Conviene que el docente la compare con la tabla impresa del curso**: se puede editar en *Profesor → Ajustes → Tabla Z*.
-
-### Corrección de bureta (criterio del docente)
-Se usa el tramo cuyo nominal (2, 4, 6, 8 o 10 mL) está **más cerca** de la lectura G: corrección = V20(tramo) − nominal, G corregido = G + corrección. En un empate exacto (3, 5, 7 o 9 mL) se usa el tramo mayor. Ejemplos probados:
-- B1001, G = 8,01 → tramo 0–8 (V20 8,02) → +0,02 → **8,03 mL**
-- B1011, G = 8,40 → tramo 0–8 (V20 7,96) → −0,04 → **8,36 mL**
-- G = 4,9 → tramo 0–4; G = 7,2 → 0–8; G = 9,1 → 0–10
-
-### Ejemplos resueltos a mano
-**P2.** Datos: m = 0,0425 g de Na₂CO₃, assay 99,8 %, G = 8,01 mL en la bureta B1001-26.
-- G corregido = 8,01 + 0,02 = 8,03 mL
-- C = 2·0,0425·0,998·1000 / (105,99·8,03) = 84,83 / 851,10 = **0,09967 mol/L**
-
-**P3.** Datos: m = 0,5104 g de H₂C₂O₄·2H₂O, assay 99,5 %, matraz MA10005-26 (V20 100,06 mL), pipeta PA1013-26 (V20 10,04 mL), G = 8,03 mL en la bureta B1005-26.
-- G corregido = 8,03 + 0,02 = 8,05 mL
-- Factor de alícuota = 10,04 / 100,06 = 0,100340
-- C = 2·0,5104·0,995·0,100340·1000 / (126,07·8,05) = 101,915 / 1014,86 = **0,10042 mol/L**
-
-**P1.** Datos: pipeta PA1005-26 a 20 °C y 1013 hPa, con Z = 1,0029 mL/g.
-- V20 = m·Z
-- Vref = 10,02 mL (tabla Lab QA)
-- Criterio 1: s/√n ≤ Tol/3
-- Criterio 2: |V̄20 − Vref| + t·s/√n ≤ Tol, con la tolerancia que escribió el alumno
-
-**Bureta en P1.** Para B1003-26, tramo 0–8: Vref = 8,00 mL (V20 de ese tramo).
-
-**Promediabilidad.** Para 0,1012 · 0,1013 · 0,1011 · 0,1030, el Q de Dixon da Q = 0,0017/0,0019 = 0,895 > 0,829, así que se descarta 0,1030.
-
-### Corrección y diagnóstico
-- **Tolerancias por defecto:**
-  - valores: ± 0,1 % relativo;
-  - s, CV, t·s/√n e incertidumbre: ± 5 % relativo.
-  - Las dos se pueden cambiar a modo absoluto o a cifras significativas. En «N cifras» se acepta hasta 1 unidad en la N-ésima cifra.
-- **Cómo se diagnostica:** el motor recalcula la entrega con cada error típico y ve cuál reproduce el número del alumno. Los errores que prueba son:
-  - V nominal en vez de V20;
-  - sin corrección de bureta, tramo mayor o menor, o la corrección restada;
-  - relación 1:1 o invertida;
-  - alícuota omitida o invertida;
-  - assay sin aplicar;
-  - todas las determinaciones promediadas, o las marcadas por el alumno;
-  - t con n grados de libertad, z = 1,96 en vez de t, o t·s en vez de t·s/√n;
-  - en P1: Z a 20 °C, Z = 1/ρ(agua) o Vref nominal.
-- **Qué se informa:** solo los diagnósticos que explican al menos la mitad de los campos que explica el principal. Así se descartan las coincidencias numéricas aisladas.
-- **Pruebas con los 12 alumnos de ejemplo:**
-  - los correctos tienen todos los campos bien;
-  - en cada uno de los demás, el diagnóstico principal es el error que se le introdujo.
 
 ---
 
@@ -445,16 +373,6 @@ El sitio de CIAAW no se pudo descargar desde el entorno de trabajo, así que los
 **Valores críticos:**
 - Q de Dixon al 95 % (n = 3 a 10): 0,970, 0,829, 0,710, 0,625, 0,568, 0,526, 0,493 y 0,466. Coinciden con la tabla de Rorabacher (1991).
 - G de Grubbs bilateral con α = 0,05 (n = 3, 4, 5, 6, 7, 8 y 10): 1,1543, 1,4812, 1,7150, 1,8871, 2,0200, 2,1266 y 2,2900. Coinciden con ASTM E178 y con NIST (calculados a partir de la distribución t).
-
----
-
-## 9. Preguntas de autocontrol (`src/chem/__tests__/autocontrol.test.ts`)
-
-- Las preguntas de `src/data/autocontrol.ts` están copiadas de la cuaderneta:
-  - Cantidad por práctico: 9, 7, 9, 5, 5, 8, 8, 10, 9, (P10: ninguna), 13, 11 y 4.
-  - Los identificadores no se repiten y las letras están en orden.
-- Las respuestas modelo son **borradores a validar por el docente** (ver PENDIENTES.md).
-- El puntaje de las Preguntas Previas (5 en individual y 7 en grupal, sobre 12) es el del Teórico 1.
 
 ---
 

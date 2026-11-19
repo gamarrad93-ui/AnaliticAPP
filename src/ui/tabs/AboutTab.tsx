@@ -19,17 +19,6 @@ export default function AboutTab() {
         </p>
       </Sec>
 
-      <Sec title="Prácticos de laboratorio">
-        <p>
-          La pestaña <strong>Prácticos</strong> cubre los 13 prácticos de laboratorio: para cada uno calcula la diagramación (las tomas para un gasto de ≈ 8 mL en bureta de 10,00 mL),
-          el resultado de cada determinación con la ecuación del práctico y el tratamiento estadístico con el criterio de cada práctico (intervalo de repetibilidad Ir = 2,8·σr y CAI = 1,96·σr/√n cuando σr es conocido;
-          test Q de Dixon o CV máximo y CAI = t·s/√n en los demás). También verifica especificaciones (USP, Reglamento Bromatológico Nacional).
-        </p>
-        <p>
-          Los datos precargados son <strong>de ejemplo</strong>: cada estudiante reemplaza con sus masas, gastos corregidos y V20.
-        </p>
-      </Sec>
-
       <Sec title="Equilibrio ácido-base: modelo exacto">
         <p>
           El pH se calcula resolviendo el <strong>balance de carga completo</strong> junto con los balances de masa de cada especie, <strong>sin aproximaciones</strong>
@@ -104,11 +93,11 @@ export default function AboutTab() {
         </p>
       </Sec>
 
-      <Sec title="Revisión práctica y autocontrol">
+      <Sec title="Revisión práctica">
         <p>
           Los problemas, criterios y preguntas se cargaron de los documentos del curso, sin agregar contenido. La solución de referencia de cada problema la calcula el motor
           (estequiometría, tomas y gasto teórico, pH en el punto equivalente con el motor ácido-base exacto). Veredicto: 1ª RP con σR (Ir = 2,8·σR), Dixon o Grubbs y CV;
-          2ª RP con CV ideal/aceptable y CV &lt; 10 % en espectrofotometría. Las respuestas modelo del autocontrol son borradores a validar por el docente.
+          2ª RP con CV ideal/aceptable y CV &lt; 10 % en espectrofotometría.
         </p>
       </Sec>
 

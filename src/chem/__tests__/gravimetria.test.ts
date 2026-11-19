@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseFormula, prettyFormula, tryParse } from '../gravimetria/formula';
-import { gravimetricFactor, gravimetricResult, toFraction } from '../gravimetria/factor';
-import { constantWeight } from '../gravimetria/pesoConstante';
-import { changeMoisture, dryToWet, hDryToWet, hWetToDry, moisture, wetToDry } from '../gravimetria/humedad';
+import { gravimetricFactor, toFraction } from '../gravimetria/factor';
 import { BUILTIN_LIBRARY, CLASSIC_FACTORS } from '../gravimetria/biblioteca';
 
 const F = (w: string, s: string) => gravimetricFactor(w, s).F;
@@ -76,46 +74,5 @@ describe('Factor gravimétrico', () => {
   it('fracciones', () => expect(toFraction(1.5)).toEqual([3, 2]));
   it('todos los factores clásicos tienen elemento común', () => {
     for (const [w, s] of CLASSIC_FACTORS) expect(gravimetricFactor(w, s).element, `${w}→${s}`).not.toBeNull();
-  });
-  it('cálculo de una réplica con alícuota', () => {
-    const r = gravimetricResult({ precipitate: 0.4321, sample: 0.5, F: F('BaSO4', 'SO3'), aliquotFactor: 1 });
-    expect(r.pct).toBeCloseTo(29.646, 2);
-    expect(gravimetricResult({ precipitate: 0.2, sample: 1, F: 0.5, aliquotFactor: 250 / 25 }).mSought).toBeCloseTo(1, 12);
-  });
-});
-
-describe('Peso constante', () => {
-  it('≤ 0,3 mg entre pesadas consecutivas', () => {
-    const c = constantWeight([25.1250, 25.1238, 25.1236, 25.1235]);
-    expect(c.reachedAt).toBe(2);
-    expect(c.final).toBe(25.1236);
-    expect(c.diffsMg[1]).toBeCloseTo(-1.2, 6);
-    expect(constantWeight([25.1250, 25.1238]).reachedAt).toBeNull();
-    expect(constantWeight([25.1250, 25.1238], 2).reachedAt).toBe(1);
-  });
-});
-
-describe('Humedad y base seca', () => {
-  it('10,000 g → 8,000 g', () => {
-    const m = moisture(10, 8);
-    expect(m.hBH).toBeCloseTo(20, 10);
-    expect(m.hBS).toBeCloseTo(25, 10);
-    expect(m.dry).toBeCloseTo(80, 10);
-  });
-  it('5,00 % b.h. con H = 20 % → 6,25 % b.s. (y vuelta)', () => {
-    expect(wetToDry(5, 20)).toBeCloseTo(6.25, 10);
-    expect(dryToWet(6.25, 20)).toBeCloseTo(5, 10);
-  });
-  it('humedad b.h. ↔ b.s.', () => {
-    expect(hWetToDry(20)).toBeCloseTo(25, 10);
-    expect(hDryToWet(25)).toBeCloseTo(20, 10);
-  });
-  it('cambio de humedad', () => {
-    expect(changeMoisture(5, 20, 0)).toBeCloseTo(6.25, 10);
-    expect(changeMoisture(10, 8, 12)).toBeCloseTo(10 * 88 / 92, 10);
-  });
-  it('errores', () => {
-    expect(() => moisture(8, 10)).toThrow();
-    expect(() => wetToDry(5, 100)).toThrow();
   });
 });

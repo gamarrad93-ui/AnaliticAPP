@@ -1,5 +1,5 @@
 /**
- * Los cuatro modelos de calibración que pide la cuaderneta (Prácticos 12 y 13, ejercicio de Cr):
+ * Los cuatro modelos de calibración (lineal y cuadrático, con y sin ordenada):
  *   lineal con ordenada:     y = a + b·x
  *   lineal sin ordenada:     y = b·x
  *   cuadrático con ordenada: y = a + b·x + c·x²
@@ -67,30 +67,4 @@ export function fitModel(x: number[], y: number[], id: ModelId): ModelFit {
   const ym = y.reduce((s, v) => s + v, 0) / y.length;
   const sst = id === 'lin' || id === 'quad' ? y.reduce((s, v) => s + (v - ym) ** 2, 0) : y.reduce((s, v) => s + v * v, 0);
   return { id, a, b, c, r2: 1 - ss / sst, sres: Math.sqrt(ss / (x.length - p)), residuals, fitted, p };
-}
-
-export function fitAllModels(x: number[], y: number[]): ModelFit[] {
-  return (['lin', 'lin0', 'quad', 'quad0'] as ModelId[]).flatMap((id) => {
-    try {
-      return [fitModel(x, y, id)];
-    } catch {
-      return [];
-    }
-  });
-}
-
-/** Concentración a partir de una señal con el modelo elegido (raíz dentro del rango, para cuadráticos). */
-export function inverseModel(m: ModelFit, yv: number, xmax: number): number | null {
-  if (m.c === 0) return m.b !== 0 ? (yv - m.a) / m.b : null;
-  const A = m.c;
-  const B = m.b;
-  const C = m.a - yv;
-  const disc = B * B - 4 * A * C;
-  if (disc < 0) return null;
-  const r1 = (-B + Math.sqrt(disc)) / (2 * A);
-  const r2 = (-B - Math.sqrt(disc)) / (2 * A);
-  const cands = [r1, r2].filter((r) => r >= -0.1 * xmax && r <= 1.5 * xmax);
-  if (!cands.length) return null;
-  const lin = B !== 0 ? -C / B : 0;
-  return cands.reduce((p, r) => (Math.abs(r - lin) < Math.abs(p - lin) ? r : p));
 }

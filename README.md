@@ -1,6 +1,6 @@
 # ⚗️ AnalíticApp — Química Analítica I
 
-App web para el curso de **Química Analítica I** (Tecnólogo Químico, Uruguay).
+App web para cualquiera que estudie **Química Analítica I** (pensada para el curso del Tecnólogo Químico, Uruguay).
 Hecha con IA (Claude) por **Diego Gamarra** · Validada con: **Pablo Buccino**.
 
 Funciona en la computadora, en el proyector (botón **📽️ Modo proyector**) y en el celular. No necesita servidor ni cuenta.
@@ -9,19 +9,14 @@ Funciona en la computadora, en el proyector (botón **📽️ Modo proyector**) 
 
 | Pestaña | Qué hace |
 |---|---|
-| 🧫 **Prácticos** | Los 13 prácticos de la Cuaderneta de Laboratorio 2026: diagramación (cuánto tomar para gastar ≈ 8 mL en bureta de 10,00 mL), planilla de determinaciones y tratamiento estadístico con el criterio de cada práctico (Ir = 2,8·σr, Q de Dixon, CV), especificaciones (USP, RBN), V20 con factor Z, derivadas de la valoración potenciométrica y los 4 modelos de calibración. |
-| 📝 **Entregas** | *Demo* de planillas digitales: el alumno completa la hoja del práctico (P1, P2, P3) con sus resultados; el profesor ve cada valor contra el recalculado (✓/✗), el error probable, el procedimiento, el resumen del grupo y exporta a Excel/CSV. Los datos quedan sólo en el navegador (exportar/importar JSON). |
 | 🧪 **Titulaciones** | Curvas ácido-base exactas (fuertes, débiles, polipróticos, mezclas). Puntos de equivalencia y semiequivalencia, 1ª derivada, pH a cualquier volumen, bandas de indicadores, "¿Qué indicador sirve?" y error de titulación. |
 | 📊 **Especies y buffers** | Diagrama de distribución (α y log C vs pH) con pKa editables. Diseñador de buffers: par conjugado óptimo, gramos/mL a pesar, capacidad buffer. |
 | 📈 **Calibración** | Cuatro modelos sobre los mismos datos (lineal, por el origen, cuadrático y cuadrático sin ordenada), corrección por blanco opcional con sus gráficos, tabla comparativa con el mejor modelo, residuos agrupados, LOD/LOQ, desconocida con intervalo de confianza y adición estándar. Tabla tipo planilla, pegar desde Excel, exportar a PNG y CSV. |
 | ⚡ **Redox** | Curvas E vs V exactas (Fe²⁺/Ce⁴⁺, Fe²⁺/MnO₄⁻, Fe²⁺/Cr₂O₇²⁻, I₃⁻/S₂O₃²⁻ o cuplas a elección), potencial de equivalencia, indicadores redox con error, electrodo de referencia. |
 | 🔗 **EDTA y precipitación** | Curvas pM con α(Y⁴⁻) y NH₃ auxiliar, log K′ vs pH (pH mínimo). Argentometría (pAg/pX, mezclas de haluros), Mohr, Volhard y Fajans. |
 | 🧂 **Solubilidad** | Ksp, ion común (exacto), efecto del pH, "¿precipita?" al mezclar dos soluciones. |
-| 🧫 **Prácticos (autocontrol)** | En cada práctico, cuestionario con las preguntas de autocontrol de la cuaderneta: escribís tu respuesta, ves la respuesta modelo (borrador a validar por el docente) y te autoevaluás; progreso guardado, orden al azar y repaso de las que fallaste. Datos en `src/data/autocontrol.ts`. |
-| 🎲 **Revisión práctica** | Pool con los 14 problemas de la 1ª RP y los 7 de la 2ª, con los criterios oficiales. Sorteo con código repetible y simulador de diagramación cronometrado (20 o 25 min); Resolver (Ir = 2,8·σR, Dixon/Grubbs, CV ideal y aceptable) y modo Docente con todas las soluciones. Datos editables en `src/data/revision-practica.ts`. |
-| 🔌 **Potenciometría** | Tabla del informe (Ḡ, 1ª y 2ª derivada) desde datos pegados de G y pH o mV; punto de equivalencia por máximo de la 1ª derivada, cero de la 2ª y método gráfico (tangentes paralelas), con varios saltos; gráficos, CSV y XLSX. Calibración del pH-metro con pendiente de Nernst. Incertidumbre por propagación (Práctico 11). |
-| ⚖️ **Gravimetría** | Masa molar con composición % (fórmulas con paréntesis, hidratos y cargas), biblioteca editable de formas pesadas y sustancias buscadas, factor gravimétrico con a/b automáticos, cálculo del % m/m con réplicas (x̄, s, CV, t·s/√n), alícuota, base seca y peso constante. |
-| 💧 **Humedad y base seca** | Humedad b.h./b.s. y materia seca con réplicas y peso constante; conversión de resultados entre base húmeda, base seca u otra humedad, también por lotes con CSV; ejemplo mixto con sulfato → % SO₃ en base seca. |
+| 🔌 **Potenciometría** | Tabla del informe (Ḡ, 1ª y 2ª derivada) desde datos pegados de G y pH o mV; punto de equivalencia por máximo de la 1ª derivada, cero de la 2ª y método gráfico (tangentes paralelas), con varios saltos; gráficos, CSV y XLSX. Calibración del pH-metro con pendiente de Nernst. Incertidumbre por propagación. |
+| ⚖️ **Gravimetría** | Masa molar con composición % (fórmulas con paréntesis, hidratos y cargas) y factor gravimétrico con a/b automáticos (o corregidos a mano), con tabla de factores clásicos. |
 | 🎯 **Estadística** | Media e IC, Q de Dixon, Grubbs, pruebas t (una muestra, dos muestras, apareada), prueba F, propagación de errores con cualquier fórmula, cifras significativas y tablas de valores críticos. |
 | ℹ️ **Acerca de** | Modelos, supuestos y bibliografía. |
 
@@ -33,22 +28,23 @@ Funciona en la computadora, en el proyector (botón **📽️ Modo proyector**) 
 
 ```
 src/
-  chem/          ← TODA la química y estadística (TypeScript puro, sin interfaz)
-    numeric/     ← solver de Brent, lectura de números con coma, tablas pegadas
-    acidbase/    ← balance de carga exacto, titulaciones, buffers, indicadores
-    data/        ← biblioteca de ácidos/bases (pKa) e indicadores
-    stats/       ← regresión, modelos de calibración, t, F, Q, Grubbs, propagación, cifras significativas
-    lab/         ← fórmulas de la cuaderneta, criterios de promediabilidad, V20, derivadas
-    practicos/   ← motor de corrección de las entregas (tabla Lab QA, bureta, Z, diagnóstico)
-    redox/       ← Nernst + balance de electrones
-    complex/     ← EDTA (α, constantes condicionales)
-    solubility/  ← Ksp, ion común, pH, argentometría
-    __tests__/   ← pruebas automáticas
+  chem/            ← TODA la química y estadística (TypeScript puro, sin interfaz)
+    numeric/       ← solver de Brent, lectura de números con coma, tablas pegadas
+    acidbase/      ← balance de carga exacto, titulaciones, buffers, indicadores
+    data/          ← biblioteca de ácidos/bases (pKa), indicadores, cuplas redox, metales
+    stats/         ← regresión, modelos de calibración, t, F, Q, Grubbs, propagación, cifras significativas
+    redox/         ← Nernst + balance de electrones
+    complex/       ← EDTA (α, constantes condicionales)
+    solubility/    ← Ksp, ion común, pH, argentometría
+    potenciometria/← tabla del informe, punto de equivalencia, calibración del pH-metro, incertidumbre
+    gravimetria/   ← lector de fórmulas, pesos atómicos, factor gravimétrico, biblioteca de fórmulas
+    __tests__/     ← pruebas automáticas
   ui/
-    components/  ← campos, gráficos, panel de procedimiento, exportar
-    tabs/        ← una pestaña por archivo
-    practicas/   ← los 13 prácticos de laboratorio
-  config.ts      ← nombre del autor y del profesor (para cambiar fácil)
+    components/    ← campos, gráficos, panel de procedimiento, exportar
+    gravimetria/   ← biblioteca de fórmulas guardada en el navegador
+    tabs/          ← una pestaña por archivo
+    __tests__/     ← pruebas de la interfaz (buscador, colores de indicador)
+  config.ts        ← nombre del autor y del profesor (para cambiar fácil)
 ```
 
 ## Usarla en tu computadora (para seguir desarrollando)

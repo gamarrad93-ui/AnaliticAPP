@@ -3,8 +3,6 @@ import { APP_NAME, AUTHOR, COURSE, PROFESSOR } from './config';
 import { useDisplay } from './ui/display';
 
 // Cada pestaña se carga sólo cuando se abre (la app inicia más rápido en el celular)
-const PracticesTab = lazy(() => import('./ui/tabs/PracticesTab'));
-const EntregasTab = lazy(() => import('./ui/tabs/EntregasTab'));
 const TitrationTab = lazy(() => import('./ui/tabs/TitrationTab'));
 const SpeciesTab = lazy(() => import('./ui/tabs/SpeciesTab'));
 const CalibrationTab = lazy(() => import('./ui/tabs/CalibrationTab'));
@@ -12,16 +10,11 @@ const StatsTab = lazy(() => import('./ui/tabs/StatsTab'));
 const RedoxTab = lazy(() => import('./ui/tabs/RedoxTab'));
 const ComplexTab = lazy(() => import('./ui/tabs/ComplexTab'));
 const SolubilityTab = lazy(() => import('./ui/tabs/SolubilityTab'));
-const RevisionTab = lazy(() => import('./ui/tabs/RevisionTab'));
 const PotentiometryTab = lazy(() => import('./ui/tabs/PotentiometryTab'));
 const GravimetryTab = lazy(() => import('./ui/tabs/GravimetryTab'));
-const HumidityTab = lazy(() => import('./ui/tabs/HumidityTab'));
 const AboutTab = lazy(() => import('./ui/tabs/AboutTab'));
 
 const TABS = [
-  { id: 'practicos', label: 'Prácticos', icon: '🧫', C: PracticesTab },
-  { id: 'entregas', label: 'Entregas', icon: '📝', C: EntregasTab },
-  { id: 'revision', label: 'Revisión práctica', icon: '🎲', C: RevisionTab },
   { id: 'titulaciones', label: 'Titulaciones', icon: '🧪', C: TitrationTab },
   { id: 'especies', label: 'Especies y buffers', icon: '📊', C: SpeciesTab },
   { id: 'calibracion', label: 'Calibración', icon: '📈', C: CalibrationTab },
@@ -31,23 +24,33 @@ const TABS = [
   { id: 'solubilidad', label: 'Solubilidad', icon: '🧂', C: SolubilityTab },
   { id: 'potenciometria', label: 'Potenciometría', icon: '🔌', C: PotentiometryTab },
   { id: 'gravimetria', label: 'Gravimetría', icon: '⚖️', C: GravimetryTab },
-  { id: 'humedad', label: 'Humedad y base seca', icon: '💧', C: HumidityTab },
   { id: 'acerca', label: 'Acerca de', icon: 'ℹ️', C: AboutTab },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
 
-/** La pestaña activa queda en la URL (#calibracion) para poder compartir el link directo. */
+/**
+ * La pestaña activa queda en la URL (#calibracion) para poder compartir el link directo.
+ * Un link desconocido o de una pestaña que ya no existe (#practicos, #entregas, #humedad,
+ * #revision) abre la primera pestaña.
+ */
 function tabFromHash(): TabId {
   const h = window.location.hash.replace('#', '').split('?')[0];
-  return (TABS.find((t) => t.id === h)?.id ?? 'practicos') as TabId;
+  return TABS.find((t) => t.id === h)?.id ?? TABS[0].id;
 }
 
 export default function App() {
   const { projector, setProjector, dark, setDark } = useDisplay();
   const [tab, setTab] = useState<TabId>(tabFromHash);
   useEffect(() => {
-    const on = () => setTab(tabFromHash());
+    const on = () => {
+      const t = tabFromHash();
+      setTab(t);
+      // link viejo o desconocido (ej. #practicos): se corrige la dirección sin agregar al historial
+      const h = window.location.hash.replace('#', '').split('?')[0];
+      if (h && h !== t) window.history.replaceState(null, '', `#${t}`);
+    };
+    on();
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);
   }, []);

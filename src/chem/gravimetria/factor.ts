@@ -58,10 +58,3 @@ export function gravimetricFactor(weighedFormula: string, soughtFormula: string,
   if (!(a > 0) || !(b > 0)) throw new Error('a y b tienen que ser mayores que cero.');
   return { weighed, sought, common, element, a, b, F: (a * sought.M) / (b * weighed.M) };
 }
-
-/** Cálculo de una réplica gravimétrica. */
-export function gravimetricResult(p: { precipitate: number; sample: number; F: number; aliquotFactor?: number }) {
-  const f = p.aliquotFactor ?? 1;
-  const mSought = p.precipitate * p.F * f;
-  return { mSought, pct: (mSought / p.sample) * 100 };
-}

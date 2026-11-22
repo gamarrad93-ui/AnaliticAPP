@@ -6,7 +6,7 @@ import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer,
 import { DataGrid, emptyGrid, gridFromText, gridToPoints } from '../components/DataGrid';
 import { detectionLimits, inversePrediction, linearRegression, standardAddition, type Regression } from '../../chem/stats/regression';
 import { parseList } from '../../chem/numeric/table';
-import { FourModelsSection } from '../components/FourModels';
+import { FourEquations, FourModelsSection } from '../components/FourModels';
 import { fmtFixed, fmtSig, fmtTick, niceTicks, texNum } from '../../chem/numeric/format';
 import { formatWithUncertainty } from '../../chem/stats/sigfigs';
 import { Alert, NumField, Segmented, Stat, Toggle } from '../components/fields';
@@ -123,6 +123,11 @@ export default function CalibrationTab() {
     if (pred && lim && pred.x0 < lim.loq) warnings.push(`La concentración de la desconocida está por debajo del LOQ (${fmtSig(lim.loq, 3)}): se detecta pero no se cuantifica con buena precisión.`);
   }
 
+  // recta con los errores de pendiente y ordenada
+  const linearEq = reg
+    ? `y = (${fmtSig(reg.slope, 4)} ± ${fmtSig(reg.sSlope, 2)})·x ${reg.intercept >= 0 ? '+' : '−'} (${fmtSig(Math.abs(reg.intercept), 4)} ± ${fmtSig(reg.sIntercept, 2)})`
+    : '';
+
   const steps: Step[] = reg ? buildSteps(reg, sa, mode, lim, pred, confidence) : [];
   if (blankApplied && 'reg' in fit)
     steps.unshift({
@@ -212,10 +217,16 @@ export default function CalibrationTab() {
             <>
               {warnings.map((w, i) => <Alert key={i} kind="warn">{w}</Alert>)}
               <section className="card">
-                {mode === 'cal' && <p className="mb-2 text-sm text-slate-600 dark:text-slate-400">Modelo lineal (mínimos cuadrados ordinarios): parámetros con sus errores, LOD/LOQ y la concentración de la desconocida con su intervalo de confianza. La comparación con los otros modelos está más abajo.</p>}
-                <div className="mb-3 text-center font-mono text-lg">
-                  y = ({fmtSig(reg.slope, 4)} ± {fmtSig(reg.sSlope, 2)})·x {reg.intercept >= 0 ? '+' : '−'} ({fmtSig(Math.abs(reg.intercept), 4)} ± {fmtSig(reg.sIntercept, 2)})
-                </div>
+                {mode === 'cal' && 'x' in fit ? (
+                  <>
+                    <p className="mb-2 text-sm text-slate-600 dark:text-slate-400">
+                      Ecuaciones de los cuatro modelos (★ = mejor ajuste). Los parámetros con sus errores, LOD/LOQ y la desconocida de abajo son del modelo lineal (mínimos cuadrados ordinarios); los gráficos y la comparación de los cuatro modelos están más abajo.
+                    </p>
+                    <FourEquations x={fit.x} y={fit.y} linear={linearEq} />
+                  </>
+                ) : (
+                  <div className="mb-3 text-center font-mono text-lg">{linearEq}</div>
+                )}
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                   <Stat label="Pendiente b" value={fmtSig(reg.slope, 5)} sub={`s_b = ${fmtSig(reg.sSlope, 3)}`} />
                   <Stat label="Ordenada a" value={fmtSig(reg.intercept, 5)} sub={`s_a = ${fmtSig(reg.sIntercept, 3)}`} />

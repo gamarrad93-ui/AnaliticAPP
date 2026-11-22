@@ -23,12 +23,39 @@ const LETTER: Record<FourId, string> = { lineal: 'a', origen: 'b', cuadratico: '
 
 /** Ecuación con coma decimal. */
 export function fourEquation(f: FourFit): string {
-  const s = (v: number, d = 4) => fmtSig(v, d);
+  // signo menos tipográfico (−) también en el primer coeficiente
+  const s = (v: number, d = 4) => fmtSig(v, d).replace(/^-/, '−');
   const term = (v: number, txt: string) => (v < 0 ? ` − ${s(-v)}${txt}` : ` + ${s(v)}${txt}`);
   if (f.id === 'cuadratico') return `y = ${s(f.a)}x²${term(f.m, 'x')}${term(f.b, '')}`;
   if (f.id === 'cuadratico0') return `y = ${s(f.a)}x²${term(f.m, 'x')}`;
   if (f.id === 'origen') return `y = ${s(f.m)}x`;
   return `y = ${s(f.m)}x${term(f.b, '')}`;
+}
+
+/**
+ * Las cuatro ecuaciones juntas, para el recuadro de arriba de Calibración.
+ * La lineal se muestra con ± s de la pendiente y de la ordenada (`linear`); las demás, con sus coeficientes.
+ */
+export function FourEquations(props: { x: number[]; y: number[]; linear: string }) {
+  const { dark } = useDisplay();
+  const fits = useMemo(() => fitFour(props.x, props.y), [props.x, props.y]);
+  const best = useMemo(() => chooseBest(fits), [fits]);
+  return (
+    <ul className="mb-3 space-y-1.5" aria-label="Ecuaciones de los cuatro modelos">
+      {fits.map((f) => {
+        const c = dark ? MODEL_COLORS[f.id].dark : MODEL_COLORS[f.id].light;
+        return (
+          <li key={f.id} className="grid items-baseline gap-x-3 gap-y-0.5 rounded-lg bg-slate-50 px-3 py-1.5 dark:bg-slate-800/50 sm:grid-cols-[13.5rem_1fr_auto]" style={{ borderLeft: `4px solid ${c}` }}>
+            <span className="text-sm font-semibold" style={{ color: c }}>
+              {LETTER[f.id]}) {FOUR_LABELS[f.id]} {best?.id === f.id && <span title="Mejor ajuste">★</span>}
+            </span>
+            <span className="font-mono text-base sm:text-lg">{f.id === 'lineal' ? props.linear : fourEquation(f)}</span>
+            <span className="justify-self-end font-mono text-xs text-slate-600 dark:text-slate-400">R² = {fmtFixed(f.r2Common, 5)}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 export function FourModelsSection(props: { x: number[]; y: number[]; xLabel: string; yLabel: string; y0: number | null; unit: string; extraCsvRows?: (string | number)[][] }) {
